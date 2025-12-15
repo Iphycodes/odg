@@ -119,6 +119,7 @@ const SellItem = () => {
               platformFee: selectedItem.fee ?? 0,
               live: selectedItem.live ?? false,
               feePaymentStatus: selectedItem.feePaymentStatus ?? 'awaiting approval',
+              id: selectedItem?.id ?? '',
             }}
             isSellerView={true}
           />
@@ -207,7 +208,7 @@ const SellItem = () => {
                       transition={{ duration: 0.2 }}
                       className="overflow-hidden"
                     >
-                      <FilterPanel />
+                      <FilterPanel setIsLoading={setIsLoading} setShowFilters={setShowFilters} />
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -264,6 +265,8 @@ const SellItem = () => {
               platformFee: selectedItem.fee ?? 0,
               live: selectedItem.live ?? false,
               feePaymentStatus: selectedItem.feePaymentStatus ?? 'awaiting approval',
+              id: selectedItem?.id ?? '',
+              productTags: selectedItem?.productTags ?? [],
             }}
             isSellerView={true}
           />
