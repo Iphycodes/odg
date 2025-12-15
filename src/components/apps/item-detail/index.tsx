@@ -115,7 +115,7 @@ Price: ${formattedPrice}`;
         item.askingPrice?.price / 100,
         Currencies.NGN
       )}`,
-      url: window.location.href,
+      url: `${window.location.href}/product/${item?.id}`,
     };
 
     try {

@@ -128,7 +128,7 @@ Price: ${formattedPrice}`;
         (item.askingPrice?.price ?? 0) / 100,
         Currencies.NGN
       )}`,
-      url: window.location.href,
+      url: `${window.location.origin}/product/${item?.id}`,
     };
 
     try {
@@ -278,7 +278,7 @@ Price: ${formattedPrice}`;
           >
             {/* Item Details */}
             <div className="space-y-6">
-              {isMobile && (
+              {/* {isMobile && (
                 <div className="flex items-center justify-end">
                   <div className="flex items-center gap-4">
                     <Tooltip title={isSaved ? 'Remove from saved' : 'Save item'}>
@@ -310,7 +310,7 @@ Price: ${formattedPrice}`;
                     </Tooltip>
                   </div>
                 </div>
-              )}
+              )} */}
 
               <div>
                 <h2 className="text-xl font-semibold mb-1 cursor-pointer">{item?.itemName}</h2>
@@ -429,6 +429,17 @@ Price: ${formattedPrice}`;
                   <Bookmark size={20} />
                   {isSaved ? 'Remove from Save' : 'Save Item'}
                 </motion.button>
+
+                <Tooltip title="Share">
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={handleShare}
+                    className="px-2 border border-neutral-200 py-3 rounded-lg font-medium flex items-center justify-center gap-1 shadow-sm"
+                  >
+                    <Share2 className="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                  </motion.button>
+                </Tooltip>
               </div>
             </div>
           </div>

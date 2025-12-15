@@ -9,6 +9,7 @@ import NotificationsDrawer from '@grc/components/apps/notification-drawer';
 import CreateStoreModal from '@grc/components/apps/create-store-modal';
 import ChatsModal from '@grc/components/apps/chats-modal';
 import MobileNav from '@grc/components/apps/layout/mobile-nav';
+import Image from 'next/image';
 
 const { Content, Footer } = Layout;
 
@@ -43,7 +44,7 @@ const AppBaseLayout: React.FC<AppBaseLayoutProps> = ({ children }) => {
   };
 
   return (
-    <Layout hasSider={true} className="bg-background">
+    <Layout hasSider={true} className="bg-background !max-w-[100vw] overflow-x-hidden">
       {/* Only show SideNav on non-mobile screens */}
       {!mobileResponsive && (
         <SideNav
@@ -85,14 +86,24 @@ const AppBaseLayout: React.FC<AppBaseLayoutProps> = ({ children }) => {
       >
         <Content className="main-content">
           <div
-            className={`dark:text-white ${mobileResponsive ? 'px-0' : 'px-[12%] py-6'}`}
+            className={`dark:text-white ${
+              mobileResponsive ? 'px-0 !max-w-[100vw] !overflow-x-hidden' : 'px-[12%] py-6'
+            }`}
             style={{ minHeight: '100vh' }}
           >
             {children}
           </div>
           {!mobileResponsive && (
-            <Footer className="shadow-sm border-t border-border/100 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 dark:text-white">
-              Footer
+            <Footer className="shadow-sm border-t border-border/100 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 dark:text-white flex justify-center items-center w-full">
+              <div className="!mx-auto w-full flex items-center justify-center">
+                <Image
+                  priority
+                  src={`/assets/imgs/odg-logo.png`}
+                  alt="odg-logo"
+                  width={40}
+                  height={60}
+                />
+              </div>
             </Footer>
           )}
         </Content>

@@ -258,7 +258,7 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
       '/assets/imgs/laptops/hp-840-g5-3.jpg',
     ],
     askingPrice: {
-      price: 220000,
+      price: 40000000,
       negotiable: true,
     },
     // fee: 50000,

@@ -16,6 +16,7 @@ interface ItemPostProps {
   postImgurls: string[];
   askingPrice: Record<string, any>;
   condition: 'Brand New' | 'Fairly Used' | 'Uk Used';
+  availability?: boolean;
   comments: Record<string, any>[];
   itemName: string;
   id: string | number;
@@ -30,6 +31,7 @@ const ModernItemPost: React.FC<ItemPostProps> = ({
   postImgurls,
   askingPrice,
   condition,
+  availability = true,
   comments,
   itemName,
   setSelectedProductId,
@@ -129,7 +131,7 @@ Price: ${formattedPrice}`;
         askingPrice?.price / 100,
         Currencies.NGN
       )}`,
-      url: window.location.href,
+      url: `${window.location.href}/product/${id}`,
     };
 
     try {
@@ -223,7 +225,7 @@ Price: ${formattedPrice}`;
           </div>
         </div>
       </div>
-      <div className={`flex flex-col md:flex-row w-full ${isMobile ? 'gap-4' : 'gap-8'}`}>
+      <div className={`flex flex-col md:flex-row w-full ${isMobile ? 'gap-2' : 'gap-8'}`}>
         {/* Left section - Product Images */}
         <div
           className={`relative w-full md:w-3/5 overflow-hidden ${
@@ -298,11 +300,44 @@ Price: ${formattedPrice}`;
             )}
 
             <Badge
-              className="absolute top-3 right-3 backdrop-blur-lg !rounded-md"
+              className="absolute top-3 right-3 backdrop-blur-2xl !rounded-full shadow-2xl"
               count={
-                <span className="px-2 py-1 text-sm text-white font-semibold">{condition}</span>
+                <span className="px-2 py-1 !text-[10px] !text-white font-semibold">
+                  {condition}
+                </span>
               }
-              color={condition === 'Brand New' ? 'green' : 'blue'}
+              color={'white'}
+            />
+
+            <Badge
+              className={`absolute top-3 left-3 backdrop-blur-2xl !rounded-full shadow-2xl ${
+                availability
+                  ? 'bg-gradient-to-br from-emerald-400/30 via-green-400/25 to-teal-400/30 border border-emerald-200/50'
+                  : 'bg-gradient-to-br from-red-400/25 via-red-400/20 to-red-500/25 border border-red-200/40'
+              }`}
+              count={
+                <div
+                  className={`px-2 py-1 text-[10px] !flex gap-2 items-center font-semibold ${
+                    availability
+                      ? 'text-white drop-shadow-[0_2px_12px_rgba(16,185,129,0.8)]'
+                      : 'text-gray-200 drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
+                  }`}
+                >
+                  <div
+                    className={`relative w-2 h-2 rounded-full ${
+                      availability
+                        ? 'bg-emerald-300 shadow-[0_0_16px_rgba(52,211,153,1)] animate-pulse'
+                        : 'bg-red-300 shadow-[0_0_8px_rgba(156,163,175,0.6)]'
+                    }`}
+                  >
+                    {availability && (
+                      <div className="absolute inset-0 rounded-full bg-emerald-200 animate-ping opacity-75" />
+                    )}
+                  </div>
+                  <span className="tracking-wide">{availability ? 'Available' : 'Sold Out'}</span>
+                </div>
+              }
+              color={availability ? 'green' : 'default'}
             />
           </div>
         </div>
@@ -330,7 +365,7 @@ Price: ${formattedPrice}`;
                   </motion.button>
                 </Tooltip> */}
 
-                <Tooltip title="Share">
+                {/* <Tooltip title="Share">
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
@@ -339,7 +374,7 @@ Price: ${formattedPrice}`;
                   >
                     <Share2 className="w-7 h-7 text-black group-hover:text-black transition-colors" />
                   </motion.button>
-                </Tooltip>
+                </Tooltip> */}
               </div>
             </div>
           )}
@@ -400,7 +435,7 @@ Price: ${formattedPrice}`;
                   </motion.button>
                 </Tooltip> */}
 
-                <Tooltip title="Share">
+                {/* <Tooltip title="Share">
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
@@ -409,7 +444,7 @@ Price: ${formattedPrice}`;
                   >
                     <Share2 className="w-6 h-6 text-gray-400 group-hover:text-gray-600 transition-colors" />
                   </motion.button>
-                </Tooltip>
+                </Tooltip> */}
               </div>
             </div>
           )}
@@ -420,7 +455,9 @@ Price: ${formattedPrice}`;
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleWhatsAppMessage}
-              className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2 shadow-sm"
+              className={
+                'w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-1 shadow-sm'
+              }
             >
               <MessageCircle size={20} />
               Whatsapp
@@ -429,13 +466,23 @@ Price: ${formattedPrice}`;
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleBookmark}
-              className={`w-full bg-neutral-100 !text-neutral-700 border !border-neutral-200 py-3 rounded-lg font-medium flex items-center justify-center gap-2 shadow-sm ${
-                isSaved ? 'text-xs' : ''
+              className={`w-full bg-neutral-100 !text-neutral-700 border !border-neutral-200 py-3 rounded-lg font-medium flex items-center justify-center gap-1 shadow-sm ${
+                isSaved ? 'text-[10px]' : ''
               }`}
             >
               <Bookmark size={20} />
               {isSaved ? 'Remove from Save' : 'Save Item'}
             </motion.button>
+            <Tooltip title="Share">
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={handleShare}
+                className="px-2 border border-neutral-200 py-3 rounded-lg font-medium flex items-center justify-center gap-1 shadow-sm"
+              >
+                <Share2 className="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
+              </motion.button>
+            </Tooltip>
           </div>
           {/* <motion.button
             whileHover={{ scale: 1.02 }}
