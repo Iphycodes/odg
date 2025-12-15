@@ -1,17 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Badge, Tooltip } from 'antd';
-import {
-  Heart,
-  MessageCircle,
-  Bookmark,
-  Share2,
-  ChevronLeft,
-  ChevronRight,
-  MapPin,
-  Store,
-  Clock,
-} from 'lucide-react';
+import { Bookmark, Share2, ChevronLeft, ChevronRight, MapPin, MessageCircle } from 'lucide-react';
 import Image from 'next/image';
 import { numberFormat } from '@grc/_shared/helpers';
 import TruncatedDescription from '@grc/_shared/components/truncated-description';
@@ -25,10 +15,11 @@ interface ItemPostProps {
   postUserProfile: Record<string, any>;
   postImgurls: string[];
   askingPrice: Record<string, any>;
-  condition: 'Brand New' | 'Fairly Used';
+  condition: 'Brand New' | 'Fairly Used' | 'Uk Used';
   comments: Record<string, any>[];
   itemName: string;
   id: string | number;
+  productTags?: string[];
   setSelectedProductId?: React.Dispatch<React.SetStateAction<string>>;
 }
 
@@ -43,9 +34,9 @@ const ModernItemPost: React.FC<ItemPostProps> = ({
   itemName,
   setSelectedProductId,
   id,
+  productTags = [],
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [slideDirection, setSlideDirection] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -54,6 +45,38 @@ const ModernItemPost: React.FC<ItemPostProps> = ({
   // Ref for touch swiping on mobile
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const touchStartXRef = useRef<number | null>(null);
+
+  const handleBookmark = () => {
+    try {
+      const savedItems = JSON.parse(localStorage.getItem('savedItems') || '[]');
+
+      if (isSaved) {
+        const updatedItems = savedItems.filter((itemId: string | number) => itemId !== id);
+        localStorage.setItem('savedItems', JSON.stringify(updatedItems));
+        setIsSaved(false);
+      } else {
+        if (!savedItems.includes(id)) {
+          savedItems.push(id);
+          localStorage.setItem('savedItems', JSON.stringify(savedItems));
+        }
+        setIsSaved(true);
+      }
+
+      // Dispatch custom event to notify other components
+      window.dispatchEvent(new Event('savedItemsChanged'));
+    } catch (error) {
+      console.error('Error managing bookmarks:', error);
+    }
+  };
+
+  useEffect(() => {
+    try {
+      const savedItems = JSON.parse(localStorage.getItem('savedItems') || '[]');
+      setIsSaved(savedItems.includes(id));
+    } catch (error) {
+      console.error('Error loading bookmarks:', error);
+    }
+  }, [id, isModalOpen]);
 
   const nextImage = () => {
     if (currentImageIndex < postImgurls.length - 1) {
@@ -74,6 +97,51 @@ const ModernItemPost: React.FC<ItemPostProps> = ({
       setIsModalOpen(true);
     } else {
       setSelectedProductId?.(id?.toString());
+    }
+  };
+
+  const handleWhatsAppMessage = () => {
+    const phoneNumber = '2348109362830';
+    const formattedPrice = numberFormat(askingPrice?.price / 100, Currencies.NGN);
+
+    // Create the pre-filled message
+    const message = `Hi, Odogwu laptops,
+I am interested in this item.
+
+${itemName}
+${description}
+Price: ${formattedPrice}`;
+
+    // Encode the message for URL
+    const encodedMessage = encodeURIComponent(message);
+
+    // Create WhatsApp URL
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+
+    // Open WhatsApp in a new tab
+    window.open(whatsappUrl, '_blank');
+  };
+
+  const handleShare = async () => {
+    const shareData = {
+      title: itemName,
+      text: `Check out this item: ${itemName} - ${numberFormat(
+        askingPrice?.price / 100,
+        Currencies.NGN
+      )}`,
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback: copy to clipboard
+        await navigator.clipboard.writeText(window.location.href);
+        alert('Link copied to clipboard!');
+      }
+    } catch (err) {
+      console.error('Error sharing:', err);
     }
   };
 
@@ -137,21 +205,21 @@ const ModernItemPost: React.FC<ItemPostProps> = ({
             <h3 className="font-medium">
               {postUserProfile?.businessName || postUserProfile?.userName}
             </h3>
-            {sponsored && (
+            {/* {sponsored && (
               <span className="text-xs bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full font-medium">
                 Sponsored
               </span>
-            )}
+            )} */}
           </div>
           <div className="flex items-center gap-3 text-[12px] text-gray-500 dark:text-gray-400">
             <div className="flex items-center gap-1">
               <MapPin size={14} />
               <span>Kaduna State, Zaria</span>
             </div>
-            <div className="flex items-center gap-1">
+            {/* <div className="flex items-center gap-1">
               <Clock size={14} />
               <span>2d ago</span>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
@@ -241,75 +309,43 @@ const ModernItemPost: React.FC<ItemPostProps> = ({
 
         {/* Right section - Product Details */}
         <div className={`w-full md:w-1/2 ${isMobile ? 'px-2' : ''} flex flex-col`}>
-          {/* Product info */}
+          {/* Action buttons (mobile) */}
           {isMobile && (
             <div className="mt-auto space-y-6 mb-5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-6">
-                  <Tooltip title={isLiked ? 'Unlike' : 'Like'}>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => setIsLiked(!isLiked)}
-                      className="flex items-center gap-2 group"
-                    >
-                      <Heart
-                        className={`w-7 h-7 ${
-                          isLiked
-                            ? 'fill-rose-500 text-rose-500'
-                            : 'text-neutral-900 group-hover:text-black'
-                        } transition-colors`}
-                      />
-                      <span className="text-sm text-neutral-900">125</span>
-                    </motion.button>
-                  </Tooltip>
+              <div className="flex items-center justify-end gap-4">
+                {/* <Tooltip title={isSaved ? 'Remove from saved' : 'Save item'}>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setIsSaved(!isSaved)}
+                    className="group"
+                  >
+                    <Bookmark
+                      className={`w-7 h-7 ${
+                        isSaved
+                          ? 'fill-blue-500 text-blue-500'
+                          : 'text-black group-hover:text-black'
+                      } transition-colors`}
+                    />
+                  </motion.button>
+                </Tooltip> */}
 
-                  <Tooltip title="Comments">
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className="flex items-center gap-2 group"
-                    >
-                      <MessageCircle className="w-7 h-7 text-neutral-900 group-hover:text-black transition-colors" />
-                      <span className="text-sm text-neutral-900" onClick={() => handleViewItem()}>
-                        {comments.length}
-                      </span>
-                    </motion.button>
-                  </Tooltip>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <Tooltip title={isSaved ? 'Remove from saved' : 'Save item'}>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => setIsSaved(!isSaved)}
-                      className="group"
-                    >
-                      <Bookmark
-                        className={`w-7 h-7 ${
-                          isSaved
-                            ? 'fill-blue-500 text-blue-500'
-                            : 'text-black group-hover:text-black'
-                        } transition-colors`}
-                      />
-                    </motion.button>
-                  </Tooltip>
-
-                  <Tooltip title="Share">
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className="group"
-                    >
-                      <Share2 className="w-7 h-7 text-black group-hover:text-black transition-colors" />
-                    </motion.button>
-                  </Tooltip>
-                </div>
+                <Tooltip title="Share">
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={handleShare}
+                    className="group"
+                  >
+                    <Share2 className="w-7 h-7 text-black group-hover:text-black transition-colors" />
+                  </motion.button>
+                </Tooltip>
               </div>
             </div>
           )}
-          <div className="space-y-2 mb-1">
+
+          {/* Product info */}
+          <div className="space-y-3 mb-4">
             <div>
               <h2 className="text-xl font-semibold mb-1 cursor-pointer" onClick={handleViewItem}>
                 {itemName}
@@ -328,128 +364,88 @@ const ModernItemPost: React.FC<ItemPostProps> = ({
 
             <TruncatedDescription description={description} max={100} />
 
-            <div className="py-1">
-              <button
-                onClick={() => handleViewItem()}
-                className="text-neutral-500 hover:text-blue text-sm font-medium transition-colors"
-              >
-                View all comments ({comments.length})
-              </button>
-            </div>
+            {/* Product Tags */}
+            {productTags && productTags.length > 0 && (
+              <div className="flex flex-wrap gap-2 py-2">
+                {productTags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="px-3 py-1 text-xs font-medium bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Comment input */}
-          {/* <div className="mt-auto mb-4 relative">
-            <button
-              id="post-comment-button"
-              className="ml-auto mb-1 text-[10px] bottom-2 bg-blue text-white px-3 py-[2px] text-sm rounded-full font-medium hidden hover:bg-blue-600 transition-colors"
-            >
-              Post
-            </button>
-            <textarea
-              placeholder="Add a comment..."
-              rows={2}
-              className="w-full max-h-12 focus:!max-h-15 px-3 !py-2 border-b !outline-none focus:!outline-none focus:bg-neutral-100 border-gray-300 focus:!border-none dark:border-gray-700 dark:focus:border-blue-400 bg-transparent transition-colors resize-none"
-              onChange={(e) => {
-                const hasContent = e.target.value.trim().length > 0;
-                // You can use state to control the button visibility
-                // This is a simple inline approach
-                const postButton = document.getElementById('post-comment-button');
-                if (postButton) {
-                  postButton.style.display = hasContent ? 'block' : 'none';
-                }
-              }}
-            />
-          </div> */}
-
-          {/* Stats and actions */}
+          {/* Action buttons (desktop) */}
           {!isMobile && (
             <div className="mt-auto space-y-6 mb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-6">
-                  <Tooltip title={isLiked ? 'Unlike' : 'Like'}>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => setIsLiked(!isLiked)}
-                      className="flex items-center gap-2 group"
-                    >
-                      <Heart
-                        className={`w-6 h-6 ${
-                          isLiked
-                            ? 'fill-rose-500 text-rose-500'
-                            : 'text-gray-400 group-hover:text-gray-600'
-                        } transition-colors`}
-                      />
-                      <span className="text-sm text-gray-500">125</span>
-                    </motion.button>
-                  </Tooltip>
+              <div className="flex items-center justify-end gap-4">
+                {/* <Tooltip title={isSaved ? 'Remove from saved' : 'Save item'}>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setIsSaved(!isSaved)}
+                    className="group"
+                  >
+                    <Bookmark
+                      className={`w-6 h-6 ${
+                        isSaved
+                          ? 'fill-blue-500 text-blue-500'
+                          : 'text-gray-400 group-hover:text-gray-600'
+                      } transition-colors`}
+                    />
+                  </motion.button>
+                </Tooltip> */}
 
-                  <Tooltip title="Comments">
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className="flex items-center gap-2 group"
-                    >
-                      <MessageCircle className="w-6 h-6 text-gray-400 group-hover:text-gray-600 transition-colors" />
-                      <span className="text-sm text-gray-500" onClick={() => handleViewItem()}>
-                        {comments.length}
-                      </span>
-                    </motion.button>
-                  </Tooltip>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <Tooltip title={isSaved ? 'Remove from saved' : 'Save item'}>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => setIsSaved(!isSaved)}
-                      className="group"
-                    >
-                      <Bookmark
-                        className={`w-6 h-6 ${
-                          isSaved
-                            ? 'fill-blue-500 text-blue-500'
-                            : 'text-gray-400 group-hover:text-gray-600'
-                        } transition-colors`}
-                      />
-                    </motion.button>
-                  </Tooltip>
-
-                  <Tooltip title="Share">
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className="group"
-                    >
-                      <Share2 className="w-6 h-6 text-gray-400 group-hover:text-gray-600 transition-colors" />
-                    </motion.button>
-                  </Tooltip>
-                </div>
+                <Tooltip title="Share">
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={handleShare}
+                    className="group"
+                  >
+                    <Share2 className="w-6 h-6 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                  </motion.button>
+                </Tooltip>
               </div>
             </div>
           )}
-          {/* Primary actions */}
-          <div className="flex gap-4">
+
+          {/* WhatsApp button */}
+          <div className="flex items-center gap-1">
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="flex-1 bg-gradient-to-r from-blue to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-1 shadow-sm"
+              onClick={handleWhatsAppMessage}
+              className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2 shadow-sm"
             >
               <MessageCircle size={20} />
-              Chat Seller
+              Whatsapp
             </motion.button>
-
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="flex-1 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-zinc-800 dark:to-zinc-900 border border-gray-200 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-600 py-3 rounded-lg font-medium flex items-center justify-center gap-2"
+              onClick={handleBookmark}
+              className={`w-full bg-neutral-100 !text-neutral-700 border !border-neutral-200 py-3 rounded-lg font-medium flex items-center justify-center gap-2 shadow-sm ${
+                isSaved ? 'text-xs' : ''
+              }`}
             >
-              <Store size={20} />
-              Visit Store
+              <Bookmark size={20} />
+              {isSaved ? 'Remove from Save' : 'Save Item'}
             </motion.button>
           </div>
+          {/* <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleWhatsAppMessage}
+            className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2 shadow-sm"
+          >
+            <MessageCircle size={20} />
+            Message on WhatsApp
+          </motion.button> */}
         </div>
       </div>
       <ItemDetailModal
@@ -464,6 +460,8 @@ const ModernItemPost: React.FC<ItemPostProps> = ({
           condition,
           comments,
           itemName,
+          id,
+          productTags,
         }}
       />
     </motion.div>
@@ -471,14 +469,3 @@ const ModernItemPost: React.FC<ItemPostProps> = ({
 };
 
 export default ModernItemPost;
-
-interface ItemPostProps {
-  description: string;
-  sponsored: boolean;
-  postUserProfile: Record<string, any>;
-  postImgurls: string[];
-  askingPrice: Record<string, any>;
-  condition: 'Brand New' | 'Fairly Used';
-  comments: Record<string, any>[];
-  itemName: string;
-}

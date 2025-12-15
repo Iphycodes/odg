@@ -16,9 +16,9 @@ const SideNavHeader: React.FC<Props> = ({ toggleSider }) => {
           <span className="cursor-pointer" onClick={() => push('/')}>
             <Image
               priority
-              src={`/assets/imgs/mandate-logo.png`}
-              alt="giro-logo"
-              width={60}
+              src={`/assets/imgs/odg-logo-text.png`}
+              alt="odg-logo"
+              width={200}
               height={60}
             />
           </span>

@@ -14,10 +14,10 @@ const nunito = Nunito({
   display: 'swap',
 });
 export const metadata: Metadata = {
-  title: 'Comaket',
-  description: 'Biggest Network of Buyers and Sellers',
+  title: 'Odogwu Laptops',
+  description: 'Your surest laptop plug',
   viewport: { width: 'device-width', initialScale: 1 },
-  icons: { icon: '/favicon.ico' },
+  icons: { icon: '/odg-logo.ico' },
 };
 
 export interface LayoutProps {

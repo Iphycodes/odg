@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Nav } from '@grc/app/nav';
 import { AppContext } from '@grc/app-context';
 import { mediaSize, useMediaQuery } from '@grc/_shared/components/responsiveness';
+import Image from 'next/image';
 
 const { Sider } = Layout;
 interface SideNavProps {
@@ -83,7 +84,7 @@ const SideNav: React.FC<SideNavProps> = (props) => {
     <Sider
       collapsed={toggleSider}
       collapsedWidth={isMobile ? 0 : 80}
-      className="dash-sider border-r p-0 text-lg shadow-sm border-border/100"
+      className="dash-sider border-r p-0 text-lg shadow-sm border-border/100 relative"
       width={300}
       style={{
         overflow: 'auto',
@@ -112,7 +113,16 @@ const SideNav: React.FC<SideNavProps> = (props) => {
         }
         onClick={handleMenuClick}
       ></Menu>
-      <Menu
+      <div className="absolute bottom-2">
+        <Image
+          priority
+          src={`/assets/imgs/odg-model-4.png`}
+          alt="odg-logo"
+          width={300}
+          height={60}
+        />
+      </div>
+      {/* <Menu
         className="bottom-5 text-card-foreground text-[16px]"
         mode="inline"
         items={appNav?.footerMenuItems}
@@ -125,7 +135,7 @@ const SideNav: React.FC<SideNavProps> = (props) => {
               : [urlPath?.[1] ?? '']
         }
         onClick={handleMenuClick}
-      />
+      /> */}
     </Sider>
   );
 };

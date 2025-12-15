@@ -1,37 +1,38 @@
-import { Currencies } from '@grc/_shared/constant';
+import { Currencies, mockMarketItems } from '@grc/_shared/constant';
 import { numberFormat } from '@grc/_shared/helpers';
+import { AppContext } from '@grc/app-context';
 import { Slider, Tag } from 'antd';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 
 // Define types
-type Condition = 'new' | 'used' | 'refurbished';
+type Condition = 'new' | 'fairly_used' | 'uk_used';
 type Category = string;
 
 // FilterPanel Component
-const FilterPanel = () => {
-  const [priceRange, setPriceRange] = useState<number[]>([0, 1000]);
+const FilterPanel = ({
+  setIsLoading,
+  setShowFilters,
+}: {
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowFilters: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
+  const [priceRange, setPriceRange] = useState<number[]>([0, 500000000]); // In cents
   const [selectedConditions, setSelectedConditions] = useState<Condition[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
   const [activeSection, setActiveSection] = useState<'all' | 'price' | 'condition' | 'category'>(
     'all'
   );
+  const { shopItems, setShopItems } = useContext(AppContext);
+  const [originalItems] = useState(mockMarketItems); // Store original items
 
   const conditions: { value: Condition; label: string }[] = [
     { value: 'new', label: 'Brand New' },
-    { value: 'used', label: 'Fairly Used' },
-    { value: 'refurbished', label: 'Refurbished' },
+    { value: 'uk_used', label: 'Uk Used' },
+    { value: 'fairly_used', label: 'Fairly Used' },
   ];
 
-  const categories: Category[] = [
-    'Electronics',
-    'Fashion',
-    'Home & Living',
-    'Sports',
-    'Books',
-    'Automotive',
-    'Health & Beauty',
-  ];
+  const categories: Category[] = ['Hp', 'Dell', 'Lenovo', 'Acer', 'Toshiba', 'Macbook', 'Samsung'];
 
   const sections = [
     { id: 'all' as const, label: 'All Filters' },
@@ -46,7 +47,63 @@ const FilterPanel = () => {
     );
   };
 
-  // Rest of your component remains the same until the categories mapping
+  const normalizeCondition = (condition: string): Condition => {
+    const normalized = condition.toLowerCase().replace(/\s+/g, '_');
+    if (normalized === 'brand_new') return 'new';
+    if (normalized === 'uk_used') return 'uk_used';
+    if (normalized === 'fairly_used') return 'fairly_used';
+    return normalized as Condition;
+  };
+
+  const applyFilters = () => {
+    let filtered = [...originalItems];
+
+    // Filter by price range
+    filtered = filtered.filter((item) => {
+      const price = (item.askingPrice?.price ?? 0) || 0;
+      return price >= priceRange[0] && price <= priceRange[1];
+    });
+
+    // Filter by conditions
+    if (selectedConditions.length > 0) {
+      filtered = filtered.filter((item) => {
+        const itemCondition = normalizeCondition(item.condition || '');
+        return selectedConditions.includes(itemCondition);
+      });
+    }
+
+    // Filter by categories
+    if (selectedCategories.length > 0) {
+      filtered = filtered.filter((item) => {
+        const itemCategory = item.category?.toLowerCase();
+        return selectedCategories.some((category) => category.toLowerCase() === itemCategory);
+      });
+    }
+
+    setShopItems(filtered);
+    setIsLoading(false);
+  };
+
+  const applyFilterWithDelay = () => {
+    setIsLoading(true);
+    setShowFilters(false);
+    setTimeout(() => {
+      applyFilters();
+    }, 2000);
+  };
+
+  const resetFilters = () => {
+    setSelectedCategories([]);
+    setSelectedConditions([]);
+    setPriceRange([0, 100000000]);
+    setShopItems(originalItems);
+  };
+
+  // // Auto-apply filters when any filter changes (optional)
+  useEffect(() => {
+    applyFilters();
+  }, [priceRange, selectedConditions, selectedCategories]);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -87,18 +144,19 @@ const FilterPanel = () => {
                   <Slider
                     range
                     min={0}
-                    max={1000}
+                    max={500000000}
+                    step={1000000}
                     value={priceRange}
                     onChange={(value: number[]) => setPriceRange(value)}
                     tooltip={{
-                      formatter: (value) => `$${value}`,
+                      formatter: (value) => numberFormat((value || 0) / 100, Currencies.NGN),
                     }}
                   />
                 </div>
 
                 <div className="flex justify-between text-sm text-gray-500 mt-1">
-                  <span>{numberFormat(priceRange[0], Currencies.NGN)}</span>
-                  <span>{numberFormat(priceRange[1], Currencies.NGN)}</span>
+                  <span>{numberFormat(priceRange[0] / 100, Currencies.NGN)}</span>
+                  <span>{numberFormat(priceRange[1] / 100, Currencies.NGN)}</span>
                 </div>
               </div>
             </motion.div>
@@ -180,21 +238,25 @@ const FilterPanel = () => {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="mt-6 flex justify-end gap-3"
+        className="mt-6 flex justify-between items-center"
       >
-        <button
-          onClick={() => {
-            setSelectedCategories([]);
-            setSelectedConditions([]);
-            setPriceRange([0, 1000]);
-          }}
-          className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
-        >
-          Reset
-        </button>
-        <button className="px-6 py-2 bg-blue hover:bg-blue-600 text-white rounded-lg transition-colors text-sm">
-          Apply Filters
-        </button>
+        <div className="text-sm text-gray-600 dark:text-gray-400">
+          {shopItems.length} item{shopItems.length !== 1 ? 's' : ''} found
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={resetFilters}
+            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors"
+          >
+            Reset
+          </button>
+          <button
+            onClick={applyFilterWithDelay}
+            className="px-6 py-2 bg-blue hover:bg-blue-600 text-white rounded-lg transition-colors text-sm"
+          >
+            Apply Filters
+          </button>
+        </div>
       </motion.div>
     </motion.div>
   );

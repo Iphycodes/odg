@@ -146,7 +146,7 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
   {
     id: 0,
     postUserProfile: {
-      profilePicUrl: '/assets/imgs/debit-logo.png',
+      profilePicUrl: '/assets/imgs/odg-logo.png',
       userName: 'odogwu_1',
       businessName: 'Odogwu Laptops',
     },
@@ -154,54 +154,26 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
     sponsored: true,
     sold: false,
     postImgUrls: [
-      '/assets/imgs/macbook.jpg',
-      '/assets/imgs/sneakers.jpg',
-      '/assets/imgs/macbook.jpg',
-      '/assets/imgs/sneakers.jpg',
-      '/assets/imgs/macbook.jpg',
+      '/assets/imgs/laptops/dell-7440.jpg',
+      '/assets/imgs/laptops/dell-7440-2.jpg',
+      '/assets/imgs/laptops/dell-7440-3.jpg',
+      '/assets/imgs/laptops/dell-7440-4.jpg',
+      '/assets/imgs/laptops/dell-7440-5.jpg',
     ],
     askingPrice: {
-      price: 5000000,
+      price: 14500000,
       negotiable: true,
     },
-    fee: 50000,
-    condition: 'Fairly Used',
-    itemName: 'Hp EliteBook 840 g5',
+    // fee: 50000,
+    condition: 'Uk Used',
+    category: 'dell',
+    itemName: 'Dell Latitude 7440',
     description: `Processor: Core i5
         HDD: 500gb
         RAM: 16gb
         Keyboard Light
-        2gb Dedicated Graphics
-        10th generation`,
-    likes: [
-      {
-        userDpImageUrl: '',
-        userName: 'samuel_ng',
-      },
-      {
-        userDpImageUrl: '',
-        userName: 'kings',
-      },
-      {
-        userDpImageUrl: '',
-        userName: 'queenex20',
-      },
-    ],
-    bookMarks: [
-      {
-        userDpImageUrl: '',
-        userName: 'samuel_ng',
-      },
-      {
-        userDpImageUrl: '',
-        userName: 'kings',
-      },
-      {
-        userDpImageUrl: '',
-        userName: 'queenex20',
-      },
-    ],
-    comments: mockComments,
+        4th generation`,
+    productTags: ['dell', '4th generation'],
     status: 'approved',
     live: true,
     feePaymentStatus: 'processed',
@@ -209,87 +181,99 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
   {
     id: 1,
     postUserProfile: {
-      profilePicUrl: '/assets/imgs/sneakers.jpg',
-      userName: 'gunji_the_sneaker_king',
+      profilePicUrl: '/assets/imgs/odg-logo.png',
+      userName: 'odogwu_1',
+      businessName: 'Odogwu Laptops',
     },
     postAccountType: 'vendor',
-    sponsored: false,
-    sold: true,
-    postImgUrls: ['/assets/imgs/sneakers.jpg'],
-    askingPrice: {
-      price: 1400000,
-      negotiable: false,
-    },
-    fee: 14000,
-    condition: 'Brand New',
-    itemName: 'Airforce Sneaker Jumong',
-    description: `Strong and Durable
-        Size: UK 42 - 45
-        Color: White
-        Weight: 3kg
-        `,
-    likes: [
-      {
-        userDpImageUrl: '',
-        userName: 'samuel_ng',
-      },
-      {
-        userDpImageUrl: '',
-        userName: 'kings',
-      },
-      {
-        userDpImageUrl: '',
-        userName: 'queenex20',
-      },
+    sponsored: true,
+    sold: false,
+    postImgUrls: [
+      '/assets/imgs/laptops/hp-840-g3.jpg',
+      '/assets/imgs/laptops/hp-840-g3-2.jpg',
+      '/assets/imgs/laptops/hp-840-g3-3.jpg',
+      '/assets/imgs/laptops/hp-840-g3-5.jpg',
     ],
-    bookMarks: [],
-    comments: mockComments.slice(0, 5),
-    status: 'pending',
-    live: false,
-    feePaymentStatus: 'awaiting payment',
+    askingPrice: {
+      price: 22000000,
+      negotiable: true,
+    },
+    // fee: 50000,
+    condition: 'Uk Used',
+    itemName: 'Hp 840 g3',
+    category: 'hp',
+    description: `Processor: Core i5
+        HDD: 500gb
+        RAM: 16gb
+        Keyboard Light
+        6th generation`,
+    productTags: ['hp', '6th generation', 'modern'],
+    status: 'approved',
+    live: true,
+    feePaymentStatus: 'processed',
   },
   {
     id: 2,
     postUserProfile: {
-      profilePicUrl: '/assets/imgs/woman-face.jpg',
-      userName: 'emmnauella_ng',
+      profilePicUrl: '/assets/imgs/odg-logo.png',
+      userName: 'odogwu_1',
+      businessName: 'Odogwu Laptops',
     },
     postAccountType: 'vendor',
-    sponsored: false,
-    sold: true,
-    postImgUrls: ['/assets/imgs/cooking-gas.jpg'],
+    sponsored: true,
+    sold: false,
+    postImgUrls: ['/assets/imgs/laptops/dell-xps.jpg', '/assets/imgs/laptops/dell-xps-2.jpg'],
     askingPrice: {
-      price: 500000,
+      price: 54000000,
       negotiable: true,
     },
-    fee: 5000,
-    condition: 'Fairly Used',
-    itemName: '5kg Cooking Gas',
-    description: `Weight: 5kg.. I used this gas for just 2 months so it's almost like a new one
-        `,
-    likes: [
-      {
-        userDpImageUrl: '',
-        userName: 'samuel_ng',
-      },
-      {
-        userDpImageUrl: '',
-        userName: 'kings',
-      },
-      {
-        userDpImageUrl: '',
-        userName: 'queenex20',
-      },
-      {
-        userDpImageUrl: '',
-        userName: 'queenex20',
-      },
+    // fee: 50000,
+    condition: 'Uk Used',
+    itemName: 'Dell XPS 15',
+    category: 'dell',
+    description: `Processor: Core i5
+        HDD: 500gb
+        RAM: 16gb
+        Keyboard Light
+        2gb Dedicated Graphics
+        10th generation`,
+    productTags: ['dell', '10th generation', 'graphics', 'modern'],
+    status: 'approved',
+    live: true,
+    feePaymentStatus: 'processed',
+  },
+  {
+    id: 3,
+    postUserProfile: {
+      profilePicUrl: '/assets/imgs/odg-logo.png',
+      userName: 'odogwu_1',
+      businessName: 'Odogwu Laptops',
+    },
+    postAccountType: 'vendor',
+    sponsored: true,
+    sold: false,
+    postImgUrls: [
+      '/assets/imgs/laptops/hp-840-g5.jpg',
+      '/assets/imgs/laptops/hp-840-g5-2.jpg',
+      '/assets/imgs/laptops/hp-840-g5-3.jpg',
     ],
-    bookMarks: [],
-    comments: mockComments.slice(0, 1),
-    status: 'rejected',
-    live: false,
-    feePaymentStatus: 'awaiting approval',
+    askingPrice: {
+      price: 220000,
+      negotiable: true,
+    },
+    // fee: 50000,
+    condition: 'Uk Used',
+    itemName: 'Hp 840 g5',
+    category: 'hp',
+    description: `Processor: Core i5
+        HDD: 500gb
+        RAM: 16gb
+        Keyboard Light
+        8th generation`,
+    productTags: ['dell', '8th generation', 'graphics', 'modern'],
+    status: 'approved',
+    live: true,
+    feePaymentStatus: 'processed',
   },
 ];
 

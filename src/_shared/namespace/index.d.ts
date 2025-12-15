@@ -109,10 +109,12 @@ export interface mockMarketItemType {
     price: number;
     negotiable: boolean;
   };
-  condition: 'Brand New' | 'Fairly Used';
+  category: string;
+  condition: 'Brand New' | 'Fairly Used' | 'Uk Used';
   location: string;
   itemName: string;
   description: string;
+  productTags: string[];
   likes: likesType[];
   comments: commentsType[];
   bookMarks: bookMarksType[];

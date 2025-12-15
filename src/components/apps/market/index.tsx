@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Badge, Col, Row } from 'antd';
+import { Col, Empty, Row } from 'antd';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SlidersHorizontal } from 'lucide-react';
 import SidePanel from './lib/side-panel';
@@ -8,17 +8,16 @@ import SearchBar from './lib/search-bar';
 import { mockMarketItems } from '@grc/_shared/constant';
 import ModernItemPost from '../item-post-new';
 import { mediaSize, useMediaQuery } from '@grc/_shared/components/responsiveness';
-import { Notification } from 'iconsax-react';
+import { Shop } from 'iconsax-react';
 import NotificationsDrawer from '../notification-drawer';
 import { AppContext } from '@grc/app-context';
-import UserDropdown from './lib/user-dropdown';
 import ProductListingSkeleton from '../item-post-new/lib/product-listing-skeleton';
 import Product from '../product';
 
 const Market = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
-  const { setToggleNotificationsDrawer, toggleNotificationsDrawer } = useContext(AppContext);
+  const { toggleNotificationsDrawer } = useContext(AppContext);
   const [selectedProductId, setSelectedProductId] = useState('');
   // const [selectedCommentsData, setSelectedCommentsData] = useState({});
   // Simulate initial loading
@@ -54,6 +53,102 @@ const Market = () => {
     console.log('toggle:::', toggleNotificationsDrawer);
   }, [toggleNotificationsDrawer]);
 
+  const { shopItems, setShopItems } = useContext(AppContext);
+
+  const handleSearch = (searchValue: string, searchCategory: string) => {
+    // If search is empty and category is 'all', reset to original items
+
+    if (!searchValue.trim() && searchCategory === 'all') {
+      setShopItems(mockMarketItems); // Reset to original data
+      setIsLoading(false);
+      return;
+    }
+
+    const searchTerm = searchValue.toLowerCase().trim();
+
+    const filteredItems = mockMarketItems.filter((item) => {
+      // Category filter
+      const categoryMatch =
+        searchCategory === 'all' || item.category?.toLowerCase() === searchCategory.toLowerCase();
+
+      // If category doesn't match, skip this item
+      if (!categoryMatch) return false;
+
+      // If no search term, return all items in the category
+      if (!searchTerm) return true;
+
+      // Search in item name
+      const nameMatch = item.itemName?.toLowerCase().includes(searchTerm);
+
+      // Search in description
+      const descriptionMatch = item.description?.toLowerCase().includes(searchTerm);
+
+      // Search in category
+      const categoryTextMatch = item.category?.toLowerCase().includes(searchTerm);
+
+      // Search in product tags
+      const tagsMatch = item.productTags?.some((tag) => tag.toLowerCase().includes(searchTerm));
+
+      // Search in condition
+      const conditionMatch = item.condition?.toLowerCase().includes(searchTerm);
+
+      // Search in price (convert price to readable format)
+      const priceString = ((item?.askingPrice?.price ?? 0) / 100).toString();
+      const priceMatch = priceString.includes(searchTerm);
+
+      // Search in business name
+      const businessMatch = item.postUserProfile?.businessName?.toLowerCase().includes(searchTerm);
+
+      // Search in username
+      const usernameMatch = item.postUserProfile?.userName?.toLowerCase().includes(searchTerm);
+
+      // Return true if any field matches
+      return (
+        nameMatch ||
+        descriptionMatch ||
+        categoryTextMatch ||
+        tagsMatch ||
+        conditionMatch ||
+        priceMatch ||
+        businessMatch ||
+        usernameMatch
+      );
+    });
+
+    setShopItems(filteredItems);
+
+    setIsLoading(false);
+  };
+
+  const handleSearchWithDelay = (searchValue: string, searchCategory: string) => {
+    setIsLoading(true);
+    setTimeout(() => {
+      handleSearch(searchValue, searchCategory);
+    }, 2000);
+  };
+
+  const renderEmptyState = () => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex flex-col items-center justify-center py-16"
+    >
+      <Empty
+        image={
+          <Shop size={80} className="mx-auto text-gray-300 dark:text-gray-600" strokeWidth={1} />
+        }
+        description={
+          <div className="text-center">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+              {'No items'}
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400">{'No Items found here'}</p>
+          </div>
+        }
+      />
+    </motion.div>
+  );
+
   if (selectedProductId !== '' && isMobile) {
     return <Product productId={selectedProductId} setSelectedProductId={setSelectedProductId} />;
   }
@@ -72,16 +167,10 @@ const Market = () => {
             <div className={`p-4 ${isMobile ? 'px-1 pt-2' : ''}`}>
               <div className="w-full flex items-center justify-between gap-3">
                 <div className="flex-1">
-                  <SearchBar
-                    section="market"
-                    onSearch={(value, category) => {
-                      // Your search handling logic
-                      console.log(value, category);
-                    }}
-                  />
+                  <SearchBar section="market" onSearch={handleSearchWithDelay} />
                 </div>
 
-                {isMobile && (
+                {/* {isMobile && (
                   <div
                     className="cursor-pointer"
                     onClick={(e) => {
@@ -95,7 +184,7 @@ const Market = () => {
                     </Badge>
                   </div>
                 )}
-                {isMobile && <UserDropdown />}
+                {isMobile && <UserDropdown />} */}
               </div>
 
               <div className="flex items-center gap-2 mt-3 mb-1">
@@ -117,7 +206,7 @@ const Market = () => {
                     transition={{ duration: 0.2 }}
                     className="overflow-hidden"
                   >
-                    <FilterPanel />
+                    <FilterPanel setIsLoading={setIsLoading} setShowFilters={setShowFilters} />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -142,29 +231,36 @@ const Market = () => {
                 </div>
               ) : (
                 <>
-                  {mockMarketItems?.map((item, idx) => (
-                    // <motion.div
-                    //   key={idx}
-                    //   variants={itemVariants}
-                    //   className="bg-white dark:bg-gray-800 rounded-lg transition-all duration-300"
-                    // >
-                    <div key={idx}>
-                      <ModernItemPost
-                        postUserProfile={item?.postUserProfile ?? {}}
-                        sponsored={item?.sponsored ?? false}
-                        description={item?.description ?? ''}
-                        postImgurls={item?.postImgUrls ?? []}
-                        askingPrice={item?.askingPrice ?? {}}
-                        condition={item?.condition ?? 'Brand New'}
-                        itemName={item?.itemName ?? ''}
-                        comments={item?.comments ?? []}
-                        id={item?.id ?? ''}
-                        setSelectedProductId={setSelectedProductId}
-                      />
-                    </div>
+                  {shopItems?.length === 0 ? (
+                    renderEmptyState()
+                  ) : (
+                    <>
+                      {shopItems?.map((item, idx) => (
+                        // <motion.div
+                        //   key={idx}
+                        //   variants={itemVariants}
+                        //   className="bg-white dark:bg-gray-800 rounded-lg transition-all duration-300"
+                        // >
+                        <div key={idx}>
+                          <ModernItemPost
+                            postUserProfile={item?.postUserProfile ?? {}}
+                            sponsored={item?.sponsored ?? false}
+                            description={item?.description ?? ''}
+                            postImgurls={item?.postImgUrls ?? []}
+                            askingPrice={item?.askingPrice ?? {}}
+                            condition={item?.condition ?? 'Brand New'}
+                            itemName={item?.itemName ?? ''}
+                            comments={item?.comments ?? []}
+                            productTags={item?.productTags ?? []}
+                            id={item?.id ?? ''}
+                            setSelectedProductId={setSelectedProductId}
+                          />
+                        </div>
 
-                    // </motion.div>
-                  ))}
+                        // </motion.div>
+                      ))}
+                    </>
+                  )}
                 </>
               )}
             </motion.div>
@@ -180,7 +276,7 @@ const Market = () => {
               transition={{ delay: 0.2, duration: 0.4 }}
               className="sticky top-0 pt-4"
             >
-              <div className="bg-white dark:bg-gray-800 border border-neutral-50 rounded-lg shadow-sm p-4">
+              <div className="bg-white dark:bg-gray-800 border border-neutral-50 rounded-lg shadow-sm">
                 <SidePanel />
               </div>
             </motion.div>

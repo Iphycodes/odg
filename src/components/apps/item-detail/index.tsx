@@ -1,23 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tag, Tooltip } from 'antd';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Heart,
-  MessageCircle,
   Bookmark,
   Share2,
   ChevronLeft,
   ChevronRight,
   MapPin,
-  Store,
   Clock,
+  MessageCircle,
 } from 'lucide-react';
 import Image from 'next/image';
 import { numberFormat } from '@grc/_shared/helpers';
-import { Currencies, mockComments } from '@grc/_shared/constant';
+import { Currencies } from '@grc/_shared/constant';
 import { capitalize, startCase } from 'lodash';
 import { mediaSize, useMediaQuery } from '@grc/_shared/components/responsiveness';
-import CommentBox from '../comment-box';
 
 interface ItemDetailProps {
   item: {
@@ -29,6 +26,8 @@ interface ItemDetailProps {
     condition: string;
     comments: Record<string, any>[];
     itemName: string;
+    productTags?: string[];
+    id: string | number;
     status?: 'pending' | 'approved' | 'rejected';
     feePaymentStatus?:
       | 'pending'
@@ -47,6 +46,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ item, isSellerView }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [slideDirection, setSlideDirection] = useState(0);
+  const [isSaved, setIsSaved] = useState(false);
   const isMobile = useMediaQuery(mediaSize.mobile);
 
   const nextImage = () => {
@@ -58,6 +58,86 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ item, isSellerView }) => {
     setSlideDirection(-1);
     setCurrentImageIndex((prev) => (prev - 1 + item.postImgurls.length) % item.postImgurls.length);
   };
+
+  const handleBookmark = () => {
+    try {
+      const savedItems = JSON.parse(localStorage.getItem('savedItems') || '[]');
+
+      if (isSaved) {
+        const updatedItems = savedItems.filter((itemId: string | number) => itemId !== item.id);
+        localStorage.setItem('savedItems', JSON.stringify(updatedItems));
+        setIsSaved(false);
+      } else {
+        if (!savedItems.includes(item.id)) {
+          savedItems.push(item.id);
+          localStorage.setItem('savedItems', JSON.stringify(savedItems));
+        }
+        setIsSaved(true);
+      }
+
+      // Dispatch custom event to notify other components
+      window.dispatchEvent(new Event('savedItemsChanged'));
+    } catch (error) {
+      console.error('Error managing bookmarks:', error);
+    }
+  };
+
+  useEffect(() => {
+    try {
+      const savedItems = JSON.parse(localStorage.getItem('savedItems') || '[]');
+      setIsSaved(savedItems.includes(item?.id));
+    } catch (error) {
+      console.error('Error loading bookmarks:', error);
+    }
+  }, [item?.id]);
+
+  const handleWhatsAppMessage = () => {
+    const phoneNumber = '2348109362830';
+    const formattedPrice = numberFormat(item.askingPrice?.price / 100, Currencies.NGN);
+
+    const message = `Hi, Odogwu laptops,
+I am interested in this item.
+
+${item.itemName}
+${item.description}
+Price: ${formattedPrice}`;
+
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+
+    window.open(whatsappUrl, '_blank');
+  };
+
+  const handleShare = async () => {
+    const shareData = {
+      title: item.itemName,
+      text: `Check out this item: ${item.itemName} - ${numberFormat(
+        item.askingPrice?.price / 100,
+        Currencies.NGN
+      )}`,
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        alert('Link copied to clipboard!');
+      }
+    } catch (err) {
+      console.error('Error sharing:', err);
+    }
+  };
+
+  useEffect(() => {
+    try {
+      const savedItems = JSON.parse(localStorage.getItem('savedItems') || '[]');
+      setIsSaved(savedItems.includes(item.id));
+    } catch (error) {
+      console.error('Error loading bookmarks:', error);
+    }
+  }, [item.id]);
 
   const slideVariants = {
     enter: (direction: number) => ({
@@ -73,15 +153,6 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ item, isSellerView }) => {
       opacity: 0,
     }),
   };
-
-  // const itemVariants = {
-  //   hidden: { opacity: 0, y: 20 },
-  //   visible: {
-  //     opacity: 1,
-  //     y: 0,
-  //     transition: { duration: 0.5 },
-  //   },
-  // };
 
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
@@ -110,12 +181,6 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ item, isSellerView }) => {
   };
 
   return (
-    // <motion.div
-    //   variants={itemVariants}
-    //   className={`relative bg-white dark:bg-gray-800 rounded-lg transition-all duration-300 ${
-    //     isMobile ? 'px-3' : ''
-    //   }`}
-    // >
     <div
       className={`relative bg-white dark:bg-gray-800 rounded-lg transition-all duration-300 ${
         isMobile ? 'px-3' : ''
@@ -150,15 +215,6 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ item, isSellerView }) => {
           </div>
         </div>
       )}
-
-      {/* {onClose && (
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-        >
-          ×
-        </button>
-      )} */}
 
       <div className={`flex ${isMobile ? 'flex-col' : ''}`}>
         {/* Left Section - Image */}
@@ -213,7 +269,6 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ item, isSellerView }) => {
           className={`${isMobile ? 'w-full' : 'w-1/3 !min-h-[100%] overflow-y-auto p-5'} relative`}
         >
           {/* Seller Details */}
-
           {!isMobile && (
             <div className="flex items-center gap-3 mb-6">
               <div className="relative w-12 h-12">
@@ -242,6 +297,7 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ item, isSellerView }) => {
               </div>
             </div>
           )}
+
           {/* Item Details */}
           <div className="space-y-6">
             <div className="flex justify-between">
@@ -297,50 +353,44 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ item, isSellerView }) => {
               )}
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-6">
-                <Tooltip title={'Like'}>
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    className="flex items-center gap-2 group"
+            {/* Product Tags */}
+            {item.productTags && item.productTags.length > 0 && (
+              <div className="flex flex-wrap gap-2 py-2">
+                {item.productTags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="px-3 py-1 text-xs font-medium bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
                   >
-                    <Heart
-                      className={`w-6 h-6 ${'text-gray-400 group-hover:text-gray-600'} transition-colors`}
-                    />
-                    <span className="text-sm text-gray-500">125</span>
-                  </motion.button>
-                </Tooltip>
-
-                <Tooltip title="Comments">
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    className="flex items-center gap-2 group"
-                  >
-                    <MessageCircle className="w-6 h-6 text-gray-400 group-hover:text-gray-600 transition-colors" />
-                    <span className="text-sm text-gray-500">{10}</span>
-                  </motion.button>
-                </Tooltip>
+                    {tag}
+                  </span>
+                ))}
               </div>
+            )}
 
+            <div className="flex items-center justify-end">
               <div className="flex items-center gap-4">
-                <Tooltip title={'Save item'}>
+                {/* <Tooltip title={isSaved ? 'Remove from saved' : 'Save item'}>
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
+                    onClick={handleBookmark}
                     className="group"
                   >
                     <Bookmark
-                      className={`w-6 h-6 ${'text-gray-400 group-hover:text-gray-600'} transition-colors`}
+                      className={`w-6 h-6 ${
+                        isSaved
+                          ? 'fill-blue-500 text-blue-500'
+                          : 'text-gray-400 group-hover:text-gray-600'
+                      } transition-colors`}
                     />
                   </motion.button>
-                </Tooltip>
+                </Tooltip> */}
 
                 <Tooltip title="Share">
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
+                    onClick={handleShare}
                     className="group"
                   >
                     <Share2 className="w-6 h-6 text-gray-400 group-hover:text-gray-600 transition-colors" />
@@ -367,73 +417,32 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ item, isSellerView }) => {
                   Show {isDescriptionExpanded ? 'less' : 'more'}
                 </button>
               </div>
-
-              {/* Comments Section */}
-              <div className="mb-[100px]">
-                <h4 className="font-medium mb-4">Comments ({mockComments.length})</h4>
-                <div className="space-y-4">
-                  {mockComments.map((comment) => (
-                    <div key={comment.id} className="flex gap-3 items-start">
-                      <Image
-                        src={comment.user.avatar}
-                        alt={comment.user.name}
-                        width={32}
-                        height={32}
-                        className="rounded-full"
-                        style={{ width: '32px', height: '32px' }}
-                      />
-                      <div className="flex-1">
-                        <div className="rounded-lg">
-                          <span className="font-semibold">{comment.user.name}</span>
-                          <p className="text-gray-600 mt-1">{comment.text}</p>
-                        </div>
-                        <span className="text-sm text-gray-500 mt-1 block">
-                          {comment.timestamp}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
 
           {/* Action Buttons */}
           {!isSellerView && (
-            <div className="absolute max-w-full w-[90%] bottom-0 bg-white py-4 mt-6 border-t">
-              <div className="mb-4 w-full">
-                <div className="flex gap-3 w-full items-start">
-                  <Image
-                    src={item.postUserProfile?.profilePicUrl}
-                    alt={'user'}
-                    width={32}
-                    height={32}
-                    className="rounded-full"
-                    style={{ width: '32px', height: '32px' }}
-                  />
-                  <div className="flex-1">
-                    <CommentBox />
-                  </div>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="flex-1 bg-blue hover:bg-blue-700 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2"
-                >
-                  <MessageCircle size={20} />
-                  Chat with Seller
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="flex-1 border border-gray-200 hover:border-gray-300 py-3 rounded-lg font-medium flex items-center justify-center gap-2"
-                >
-                  <Store size={20} />
-                  Visit Store
-                </motion.button>
-              </div>
+            <div className="absolute w-[90%] flex gap-1 items-center bottom-0 bg-white py-4 mt-6 border-t">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleWhatsAppMessage}
+                className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2 shadow-sm"
+              >
+                <MessageCircle size={20} />
+                WhatsApp
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleBookmark}
+                className={`w-full bg-neutral-100 !text-neutral-700 border !border-neutral-200 py-3 rounded-lg font-medium flex items-center justify-center gap-2 shadow-sm ${
+                  isSaved ? 'text-xs' : ''
+                }`}
+              >
+                <Bookmark size={20} />
+                {isSaved ? 'Remove from Save' : 'Save Item'}
+              </motion.button>
             </div>
           )}
         </div>

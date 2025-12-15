@@ -1,5 +1,5 @@
 import React from 'react';
-import ComingSoon from './lib/coming-soon';
+import Image from 'next/image';
 
 interface Props {
   // Add your prop types here
@@ -15,7 +15,15 @@ const SidePanel: React.FC<Props> = ({}) => {
     <div>
       {/* <SidePanelUserAccount userProfile={userProfile} />
       <PopularVendors /> */}
-      <ComingSoon header={<div className="text-[28px] font-bold">Vendor Store</div>} />
+      {/* <ComingSoon header={<div className="text-[28px] font-bold">Vendor Store</div>} /> */}
+      <Image
+        priority
+        src={`/assets/imgs/odg-model-talk-2.png`}
+        alt="odg-model"
+        width={500}
+        height={60}
+        className="mx-auto"
+      />
     </div>
   );
 };

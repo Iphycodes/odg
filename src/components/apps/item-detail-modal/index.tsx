@@ -17,7 +17,9 @@ interface ItemDetailModalProps {
   open: boolean;
   onClose: () => void;
   item: {
+    id: string | number;
     description: string;
+    productTags: string[];
     sponsored: boolean;
     postUserProfile: Record<string, any>;
     postImgurls: string[];
