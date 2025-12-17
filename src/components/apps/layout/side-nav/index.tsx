@@ -113,7 +113,7 @@ const SideNav: React.FC<SideNavProps> = (props) => {
         }
         onClick={handleMenuClick}
       ></Menu>
-      <div className="absolute bottom-2">
+      <div className="absolute bottom-0">
         <Image
           priority
           src={`/assets/imgs/odg-model-4.png`}
