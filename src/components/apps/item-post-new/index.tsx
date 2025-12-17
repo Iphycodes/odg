@@ -131,7 +131,7 @@ Price: ${formattedPrice}`;
         askingPrice?.price / 100,
         Currencies.NGN
       )}`,
-      url: `${window.location.href}/product/${id}`,
+      url: `${window.location.origin}/product/${id}`,
     };
 
     try {
@@ -139,7 +139,7 @@ Price: ${formattedPrice}`;
         await navigator.share(shareData);
       } else {
         // Fallback: copy to clipboard
-        await navigator.clipboard.writeText(window.location.href);
+        await navigator.clipboard.writeText(`${window.location.origin}/product/${id}`);
         alert('Link copied to clipboard!');
       }
     } catch (err) {

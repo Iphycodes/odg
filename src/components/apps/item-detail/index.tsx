@@ -115,14 +115,14 @@ Price: ${formattedPrice}`;
         item.askingPrice?.price / 100,
         Currencies.NGN
       )}`,
-      url: `${window.location.href}/product/${item?.id}`,
+      url: `${window.location.origin}/product/${item?.id}`,
     };
 
     try {
       if (navigator.share) {
         await navigator.share(shareData);
       } else {
-        await navigator.clipboard.writeText(window.location.href);
+        await navigator.clipboard.writeText(`${window.location.origin}/product/${item?.id}`);
         alert('Link copied to clipboard!');
       }
     } catch (err) {

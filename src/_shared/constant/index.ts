@@ -166,6 +166,7 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
     },
     // fee: 50000,
     condition: 'Uk Used',
+    availability: true,
     category: 'dell',
     itemName: 'Dell Latitude 7440',
     description: `Processor: Core i5
@@ -200,6 +201,7 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
     },
     // fee: 50000,
     condition: 'Uk Used',
+    availability: true,
     itemName: 'Hp 840 g3',
     category: 'hp',
     description: `Processor: Core i5
@@ -229,6 +231,7 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
     },
     // fee: 50000,
     condition: 'Uk Used',
+    availability: true,
     itemName: 'Dell XPS 15',
     category: 'dell',
     description: `Processor: Core i5
@@ -263,6 +266,7 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
     },
     // fee: 50000,
     condition: 'Uk Used',
+    availability: true,
     itemName: 'Hp 840 g5',
     category: 'hp',
     description: `Processor: Core i5

@@ -33,12 +33,7 @@ const Product = ({ productId, setSelectedProductId }: ProductProps) => {
   const { push } = useRouter();
   const isMobile = useMediaQuery(mediaSize.mobile);
 
-  const item: Partial<mockMarketItemType> =
-    mockMarketItems[
-      Number(productId) === 0 || Number(productId) === 1 || Number(productId) === 2
-        ? Number(productId)
-        : 0
-    ];
+  const item: Partial<mockMarketItemType> = mockMarketItems[Number(productId)];
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 1000);
@@ -135,7 +130,7 @@ Price: ${formattedPrice}`;
       if (navigator.share) {
         await navigator.share(shareData);
       } else {
-        await navigator.clipboard.writeText(window.location.href);
+        await navigator.clipboard.writeText(`${window.location.origin}/product/${item?.id}`);
         alert('Link copied to clipboard!');
       }
     } catch (err) {
@@ -260,7 +255,7 @@ Price: ${formattedPrice}`;
                 </>
               )}
 
-              <Badge
+              {/* <Badge
                 className="absolute top-3 right-3 backdrop-blur-lg !rounded-md"
                 count={
                   <span className="px-2 py-1 text-sm text-white font-semibold">
@@ -268,6 +263,49 @@ Price: ${formattedPrice}`;
                   </span>
                 }
                 color={item?.condition === 'Brand New' ? 'green' : 'blue'}
+              /> */}
+
+              <Badge
+                className="absolute top-3 right-3 backdrop-blur-2xl !rounded-full shadow-2xl"
+                count={
+                  <span className="px-2 py-1 !text-[10px] !text-white font-semibold">
+                    {item?.condition}
+                  </span>
+                }
+                color={'white'}
+              />
+
+              <Badge
+                className={`absolute top-3 left-3 backdrop-blur-2xl !rounded-full shadow-2xl ${
+                  item
+                    ? 'bg-gradient-to-br from-emerald-400/30 via-green-400/25 to-teal-400/30 border border-emerald-200/50'
+                    : 'bg-gradient-to-br from-red-400/25 via-red-400/20 to-red-500/25 border border-red-200/40'
+                }`}
+                count={
+                  <div
+                    className={`px-2 py-1 text-[10px] !flex gap-2 items-center font-semibold ${
+                      item.availability
+                        ? 'text-white drop-shadow-[0_2px_12px_rgba(16,185,129,0.8)]'
+                        : 'text-gray-200 drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
+                    }`}
+                  >
+                    <div
+                      className={`relative w-2 h-2 rounded-full ${
+                        item.availability
+                          ? 'bg-emerald-300 shadow-[0_0_16px_rgba(52,211,153,1)] animate-pulse'
+                          : 'bg-red-300 shadow-[0_0_8px_rgba(156,163,175,0.6)]'
+                      }`}
+                    >
+                      {item.availability && (
+                        <div className="absolute inset-0 rounded-full bg-emerald-200 animate-ping opacity-75" />
+                      )}
+                    </div>
+                    <span className="tracking-wide">
+                      {item.availability ? 'Available' : 'Sold Out'}
+                    </span>
+                  </div>
+                }
+                color={item.availability ? 'green' : 'default'}
               />
             </div>
           </div>
@@ -340,7 +378,7 @@ Price: ${formattedPrice}`;
                 </div>
               )}
 
-              {!isMobile && (
+              {/* {!isMobile && (
                 <div className="flex items-center justify-end">
                   <div className="flex items-center gap-4">
                     <Tooltip title={isSaved ? 'Remove from saved' : 'Save item'}>
@@ -372,7 +410,7 @@ Price: ${formattedPrice}`;
                     </Tooltip>
                   </div>
                 </div>
-              )}
+              )} */}
 
               <div>
                 {/* Description */}

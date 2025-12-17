@@ -87,7 +87,11 @@ const AppBaseLayout: React.FC<AppBaseLayoutProps> = ({ children }) => {
         <Content className="main-content">
           <div
             className={`dark:text-white ${
-              mobileResponsive ? 'px-0 !max-w-[100vw] !overflow-x-hidden' : 'px-[12%] py-6'
+              mobileResponsive
+                ? 'px-0 !max-w-[100vw] !overflow-x-hidden'
+                : tabletResponsive
+                  ? 'px-5 py-4'
+                  : 'px-[10%] py-6'
             }`}
             style={{ minHeight: '100vh' }}
           >
@@ -95,14 +99,17 @@ const AppBaseLayout: React.FC<AppBaseLayoutProps> = ({ children }) => {
           </div>
           {!mobileResponsive && (
             <Footer className="shadow-sm border-t border-border/100 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 dark:text-white flex justify-center items-center w-full">
-              <div className="!mx-auto w-full flex items-center justify-center">
+              <div className="!mx-auto w-full flex flex-col gap-1 items-center justify-center">
                 <Image
                   priority
                   src={`/assets/imgs/odg-logo.png`}
                   alt="odg-logo"
-                  width={40}
+                  width={20}
                   height={60}
                 />
+                <p className="text-xs md:text-sm text-center">
+                  © {new Date().getFullYear()} Odogwu Laptops. All rights reserved.
+                </p>
               </div>
             </Footer>
           )}

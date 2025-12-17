@@ -111,6 +111,7 @@ export interface mockMarketItemType {
   };
   category: string;
   condition: 'Brand New' | 'Fairly Used' | 'Uk Used';
+  availability: boolean;
   location: string;
   itemName: string;
   description: string;
