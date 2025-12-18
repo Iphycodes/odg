@@ -164,7 +164,6 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
       price: 14500000,
       negotiable: true,
     },
-    // fee: 50000,
     condition: 'Uk Used',
     availability: true,
     category: 'dell',
@@ -199,7 +198,6 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
       price: 22000000,
       negotiable: true,
     },
-    // fee: 50000,
     condition: 'Uk Used',
     availability: true,
     itemName: 'Hp 840 g3',
@@ -229,7 +227,6 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
       price: 54000000,
       negotiable: true,
     },
-    // fee: 50000,
     condition: 'Uk Used',
     availability: true,
     itemName: 'Dell XPS 15',
@@ -264,7 +261,6 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
       price: 40000000,
       negotiable: true,
     },
-    // fee: 50000,
     condition: 'Uk Used',
     availability: true,
     itemName: 'Hp 840 g5',
@@ -274,7 +270,489 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
         RAM: 16gb
         Keyboard Light
         8th generation`,
-    productTags: ['dell', '8th generation', 'graphics', 'modern'],
+    productTags: ['hp', '8th generation', 'modern'],
+    status: 'approved',
+    live: true,
+    feePaymentStatus: 'processed',
+  },
+  // NEW ITEMS BELOW
+  {
+    id: 4,
+    postUserProfile: {
+      profilePicUrl: '/assets/imgs/odg-logo.png',
+      userName: 'odogwu_1',
+      businessName: 'Odogwu Laptops',
+    },
+    postAccountType: 'vendor',
+    sponsored: false,
+    sold: false,
+    postImgUrls: ['/assets/imgs/laptops/dell_5280.jpeg'],
+    askingPrice: {
+      price: 12000000,
+      negotiable: true,
+    },
+    condition: 'Uk Used',
+    availability: true,
+    category: 'dell',
+    itemName: 'Dell Latitude 5280',
+    description: `Processor: Core i5
+        HDD: 500gb
+        RAM: 8gb
+        Compact and portable design
+        7th generation`,
+    productTags: ['dell', '7th generation', 'portable'],
+    status: 'approved',
+    live: true,
+    feePaymentStatus: 'processed',
+  },
+  {
+    id: 5,
+    postUserProfile: {
+      profilePicUrl: '/assets/imgs/odg-logo.png',
+      userName: 'odogwu_1',
+      businessName: 'Odogwu Laptops',
+    },
+    postAccountType: 'vendor',
+    sponsored: false,
+    sold: false,
+    postImgUrls: ['/assets/imgs/laptops/dell_7420_2.jpeg', '/assets/imgs/laptops/dell_7420.jpeg'],
+    askingPrice: {
+      price: 35000000,
+      negotiable: true,
+    },
+    condition: 'Uk Used',
+    availability: true,
+    category: 'dell',
+    itemName: 'Dell Latitude 7420',
+    description: `Processor: Core i7
+        SSD: 512gb
+        RAM: 16gb
+        Keyboard Light
+        Premium business laptop
+        11th generation`,
+    productTags: ['dell', '11th generation', 'premium', 'ssd'],
+    status: 'approved',
+    live: true,
+    feePaymentStatus: 'processed',
+  },
+  {
+    id: 6,
+    postUserProfile: {
+      profilePicUrl: '/assets/imgs/odg-logo.png',
+      userName: 'odogwu_1',
+      businessName: 'Odogwu Laptops',
+    },
+    postAccountType: 'vendor',
+    sponsored: false,
+    sold: false,
+    postImgUrls: ['/assets/imgs/laptops/dell_7480.jpeg'],
+    askingPrice: {
+      price: 28000000,
+      negotiable: true,
+    },
+    condition: 'Uk Used',
+    availability: true,
+    category: 'dell',
+    itemName: 'Dell Latitude 7480',
+    description: `Processor: Core i5
+        SSD: 256gb
+        RAM: 16gb
+        Keyboard Light
+        8th generation`,
+    productTags: ['dell', '8th generation', 'ssd'],
+    status: 'approved',
+    live: true,
+    feePaymentStatus: 'processed',
+  },
+  {
+    id: 7,
+    postUserProfile: {
+      profilePicUrl: '/assets/imgs/odg-logo.png',
+      userName: 'odogwu_1',
+      businessName: 'Odogwu Laptops',
+    },
+    postAccountType: 'vendor',
+    sponsored: false,
+    sold: false,
+    postImgUrls: [
+      '/assets/imgs/laptops/hp_820_g3.jpeg',
+      '/assets/imgs/laptops/hp_820_g3_2.jpeg',
+      '/assets/imgs/laptops/hp_820_g3_3.jpeg',
+      '/assets/imgs/laptops/hp_820_g3_4.jpeg',
+    ],
+    askingPrice: {
+      price: 18000000,
+      negotiable: true,
+    },
+    condition: 'Uk Used',
+    availability: true,
+    category: 'hp',
+    itemName: 'HP EliteBook 820 G3',
+    description: `Processor: Core i5
+        HDD: 500gb
+        RAM: 8gb
+        Keyboard Light
+        Compact 12.5" display
+        6th generation`,
+    productTags: ['hp', '6th generation', 'compact', 'elitebook'],
+    status: 'approved',
+    live: true,
+    feePaymentStatus: 'processed',
+  },
+  {
+    id: 8,
+    postUserProfile: {
+      profilePicUrl: '/assets/imgs/odg-logo.png',
+      userName: 'odogwu_1',
+      businessName: 'Odogwu Laptops',
+    },
+    postAccountType: 'vendor',
+    sponsored: false,
+    sold: false,
+    postImgUrls: ['/assets/imgs/laptops/hp_830_g5.jpeg'],
+    askingPrice: {
+      price: 32000000,
+      negotiable: true,
+    },
+    condition: 'Uk Used',
+    availability: true,
+    category: 'hp',
+    itemName: 'HP EliteBook 830 G5',
+    description: `Processor: Core i5
+        SSD: 256gb
+        RAM: 16gb
+        Keyboard Light
+        Touchscreen display
+        8th generation`,
+    productTags: ['hp', '8th generation', 'touchscreen', 'ssd', 'elitebook'],
+    status: 'approved',
+    live: true,
+    feePaymentStatus: 'processed',
+  },
+  {
+    id: 9,
+    postUserProfile: {
+      profilePicUrl: '/assets/imgs/odg-logo.png',
+      userName: 'odogwu_1',
+      businessName: 'Odogwu Laptops',
+    },
+    postAccountType: 'vendor',
+    sponsored: false,
+    sold: false,
+    postImgUrls: ['/assets/imgs/laptops/hp_840_g3.jpeg'],
+    askingPrice: {
+      price: 20000000,
+      negotiable: true,
+    },
+    condition: 'Uk Used',
+    availability: true,
+    category: 'hp',
+    itemName: 'HP EliteBook 840 G3',
+    description: `Processor: Core i5
+        HDD: 500gb
+        RAM: 8gb
+        Keyboard Light
+        14" display
+        6th generation`,
+    productTags: ['hp', '6th generation', 'elitebook'],
+    status: 'approved',
+    live: true,
+    feePaymentStatus: 'processed',
+  },
+  {
+    id: 10,
+    postUserProfile: {
+      profilePicUrl: '/assets/imgs/odg-logo.png',
+      userName: 'odogwu_1',
+      businessName: 'Odogwu Laptops',
+    },
+    postAccountType: 'vendor',
+    sponsored: true,
+    sold: false,
+    postImgUrls: [
+      '/assets/imgs/laptops/hp_840_g5_2.jpeg',
+      '/assets/imgs/laptops/hp_840_g5_3.jpeg',
+      '/assets/imgs/laptops/hp_840_g5.jpeg',
+    ],
+    askingPrice: {
+      price: 38000000,
+      negotiable: true,
+    },
+    condition: 'Uk Used',
+    availability: true,
+    category: 'hp',
+    itemName: 'HP EliteBook 840 G5',
+    description: `Processor: Core i7
+        SSD: 512gb
+        RAM: 16gb
+        Keyboard Light
+        Premium build quality
+        8th generation`,
+    productTags: ['hp', '8th generation', 'premium', 'ssd', 'elitebook'],
+    status: 'approved',
+    live: true,
+    feePaymentStatus: 'processed',
+  },
+  {
+    id: 11,
+    postUserProfile: {
+      profilePicUrl: '/assets/imgs/odg-logo.png',
+      userName: 'odogwu_1',
+      businessName: 'Odogwu Laptops',
+    },
+    postAccountType: 'vendor',
+    sponsored: false,
+    sold: false,
+    postImgUrls: ['/assets/imgs/laptops/hp_probook_440_g5.jpeg'],
+    askingPrice: {
+      price: 25000000,
+      negotiable: true,
+    },
+    condition: 'Uk Used',
+    availability: true,
+    category: 'hp',
+    itemName: 'HP ProBook 440 G5',
+    description: `Processor: Core i5
+        HDD: 500gb
+        RAM: 8gb
+        Durable build
+        7th generation`,
+    productTags: ['hp', '7th generation', 'probook', 'durable'],
+    status: 'approved',
+    live: true,
+    feePaymentStatus: 'processed',
+  },
+  {
+    id: 12,
+    postUserProfile: {
+      profilePicUrl: '/assets/imgs/odg-logo.png',
+      userName: 'odogwu_1',
+      businessName: 'Odogwu Laptops',
+    },
+    postAccountType: 'vendor',
+    sponsored: false,
+    sold: false,
+    postImgUrls: ['/assets/imgs/laptops/lenovo_t440s.jpeg'],
+    askingPrice: {
+      price: 15000000,
+      negotiable: true,
+    },
+    condition: 'Uk Used',
+    availability: true,
+    category: 'lenovo',
+    itemName: 'Lenovo ThinkPad T440s',
+    description: `Processor: Core i5
+        HDD: 500gb
+        RAM: 8gb
+        Keyboard Light
+        Ultra-slim design
+        4th generation`,
+    productTags: ['lenovo', '4th generation', 'thinkpad', 'slim'],
+    status: 'approved',
+    live: true,
+    feePaymentStatus: 'processed',
+  },
+  {
+    id: 13,
+    postUserProfile: {
+      profilePicUrl: '/assets/imgs/odg-logo.png',
+      userName: 'odogwu_1',
+      businessName: 'Odogwu Laptops',
+    },
+    postAccountType: 'vendor',
+    sponsored: true,
+    sold: false,
+    postImgUrls: [
+      '/assets/imgs/laptops/macbook_2020_front.jpeg',
+      '/assets/imgs/laptops/macbook_2020_back.jpeg',
+      '/assets/imgs/laptops/macbook_2020_side_1.jpeg',
+      '/assets/imgs/laptops/macbook_2020_side_2.jpeg',
+      '/assets/imgs/laptops/macbook_2020_under.jpeg',
+    ],
+    askingPrice: {
+      price: 85000000,
+      negotiable: true,
+    },
+    condition: 'Uk Used',
+    availability: true,
+    category: 'macbook',
+    itemName: 'MacBook Pro 2020 13-inch',
+    description: `Processor: Apple M1 Chip
+        SSD: 256gb
+        RAM: 8gb
+        Retina Display
+        Touch Bar
+        Excellent battery life`,
+    productTags: ['macbook', 'apple', 'm1', 'retina', 'premium'],
+    status: 'approved',
+    live: true,
+    feePaymentStatus: 'processed',
+  },
+  // CHARGERS AND ACCESSORIES
+  {
+    id: 15,
+    postUserProfile: {
+      profilePicUrl: '/assets/imgs/odg-logo.png',
+      userName: 'odogwu_1',
+      businessName: 'Odogwu Laptops',
+    },
+    postAccountType: 'vendor',
+    sponsored: false,
+    sold: false,
+    postImgUrls: ['/assets/imgs/laptops/dell_big_charger.jpeg'],
+    askingPrice: {
+      price: 1500000,
+      negotiable: true,
+    },
+    condition: 'Brand New',
+    availability: true,
+    category: 'accessories',
+    itemName: 'Dell 130W Laptop Charger',
+    description: `Original Dell charger
+        130W power output
+        Compatible with Dell laptops
+        Genuine product`,
+    productTags: ['dell', 'charger', 'accessory', '130w'],
+    status: 'approved',
+    live: true,
+    feePaymentStatus: 'processed',
+  },
+  {
+    id: 16,
+    postUserProfile: {
+      profilePicUrl: '/assets/imgs/odg-logo.png',
+      userName: 'odogwu_1',
+      businessName: 'Odogwu Laptops',
+    },
+    postAccountType: 'vendor',
+    sponsored: false,
+    sold: false,
+    postImgUrls: ['/assets/imgs/laptops/Dell_charger_19v.jpeg'],
+    askingPrice: {
+      price: 1200000,
+      negotiable: true,
+    },
+    condition: 'Brand New',
+    availability: true,
+    category: 'accessories',
+    itemName: 'Dell 19V Laptop Charger',
+    description: `Original Dell charger
+        19V output
+        Compatible with most Dell laptops
+        Genuine product`,
+    productTags: ['dell', 'charger', 'accessory', '19v'],
+    status: 'approved',
+    live: true,
+    feePaymentStatus: 'processed',
+  },
+  {
+    id: 17,
+    postUserProfile: {
+      profilePicUrl: '/assets/imgs/odg-logo.png',
+      userName: 'odogwu_1',
+      businessName: 'Odogwu Laptops',
+    },
+    postAccountType: 'vendor',
+    sponsored: false,
+    sold: false,
+    postImgUrls: ['/assets/imgs/laptops/Dell_charger_130w.jpeg'],
+    askingPrice: {
+      price: 1500000,
+      negotiable: true,
+    },
+    condition: 'Brand New',
+    availability: true,
+    category: 'accessories',
+    itemName: 'Dell 130W Slim Charger',
+    description: `Original Dell slim charger
+        130W power output
+        Slim and portable design
+        Genuine product`,
+    productTags: ['dell', 'charger', 'accessory', '130w', 'slim'],
+    status: 'approved',
+    live: true,
+    feePaymentStatus: 'processed',
+  },
+  {
+    id: 18,
+    postUserProfile: {
+      profilePicUrl: '/assets/imgs/odg-logo.png',
+      userName: 'odogwu_1',
+      businessName: 'Odogwu Laptops',
+    },
+    postAccountType: 'vendor',
+    sponsored: false,
+    sold: false,
+    postImgUrls: ['/assets/imgs/laptops/hp_15_charger.jpeg'],
+    askingPrice: {
+      price: 800000,
+      negotiable: true,
+    },
+    condition: 'Brand New',
+    availability: true,
+    category: 'accessories',
+    itemName: 'HP 15 Laptop Charger',
+    description: `Original HP charger
+        Compatible with HP 15 series
+        65W power output
+        Genuine product`,
+    productTags: ['hp', 'charger', 'accessory', '65w'],
+    status: 'approved',
+    live: true,
+    feePaymentStatus: 'processed',
+  },
+  {
+    id: 19,
+    postUserProfile: {
+      profilePicUrl: '/assets/imgs/odg-logo.png',
+      userName: 'odogwu_1',
+      businessName: 'Odogwu Laptops',
+    },
+    postAccountType: 'vendor',
+    sponsored: false,
+    sold: false,
+    postImgUrls: ['/assets/imgs/laptops/hp_big_mouth_charger.jpeg'],
+    askingPrice: {
+      price: 1000000,
+      negotiable: true,
+    },
+    condition: 'Brand New',
+    availability: true,
+    category: 'accessories',
+    itemName: 'HP Big Mouth Charger',
+    description: `Original HP charger
+        Big mouth connector
+        90W power output
+        Genuine product`,
+    productTags: ['hp', 'charger', 'accessory', '90w'],
+    status: 'approved',
+    live: true,
+    feePaymentStatus: 'processed',
+  },
+  {
+    id: 20,
+    postUserProfile: {
+      profilePicUrl: '/assets/imgs/odg-logo.png',
+      userName: 'odogwu_1',
+      businessName: 'Odogwu Laptops',
+    },
+    postAccountType: 'vendor',
+    sponsored: false,
+    sold: false,
+    postImgUrls: ['/assets/imgs/laptops/lenovo_charger.jpeg'],
+    askingPrice: {
+      price: 900000,
+      negotiable: true,
+    },
+    condition: 'Brand New',
+    availability: true,
+    category: 'accessories',
+    itemName: 'Lenovo Laptop Charger',
+    description: `Original Lenovo charger
+        65W power output
+        Compatible with ThinkPad series
+        Genuine product`,
+    productTags: ['lenovo', 'charger', 'accessory', '65w'],
     status: 'approved',
     live: true,
     feePaymentStatus: 'processed',

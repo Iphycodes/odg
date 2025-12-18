@@ -157,12 +157,16 @@ const Market = () => {
     <div className="min-h-screen dark:bg-gray-900/50 w-full">
       <Row gutter={[isMobile ? 0 : 24, 0]} className="w-full max-w-screen-7xl mx-auto">
         {/* Main Content */}
-        <Col lg={isMobile ? 24 : 15} className="relative w-full p-0">
+        <Col
+          lg={isMobile ? 24 : 15}
+          className="relative w-full p-0"
+          style={{ height: '100vh', overflowY: 'auto' }}
+        >
           {/* Enhanced Search and Filter Bar */}
           <motion.div
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="sticky top-0 z-20 backdrop-blur-md bg-white/80 dark:bg-gray-900/80 shadow-sm"
+            className="!sticky top-0 z-20 backdrop-blur-md bg-white/80 dark:bg-gray-900/80 shadow-sm"
           >
             <div className={`p-4 ${isMobile ? 'px-1 pt-2' : ''}`}>
               <div className="w-full flex items-center justify-between gap-3">

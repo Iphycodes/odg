@@ -9,9 +9,8 @@ import NotificationsDrawer from '@grc/components/apps/notification-drawer';
 import CreateStoreModal from '@grc/components/apps/create-store-modal';
 import ChatsModal from '@grc/components/apps/chats-modal';
 import MobileNav from '@grc/components/apps/layout/mobile-nav';
-import Image from 'next/image';
 
-const { Content, Footer } = Layout;
+const { Content } = Layout;
 
 interface AppBaseLayoutProps {
   // Add your prop types here
@@ -75,12 +74,14 @@ const AppBaseLayout: React.FC<AppBaseLayoutProps> = ({ children }) => {
       />
 
       <Layout
-        className="body-layout relative z-0 bg-background"
+        className="body-layout relative z-0 bg-background !h-[100vh] !max-h-[100vh] overflow-y-auto"
         style={{
           marginLeft: `${mobileResponsive ? 0 : tabletResponsive ? 0 : '300px'}`,
           transition: 'margin-left 0.3s ease',
           // Add padding bottom for mobile to account for bottom navigation
-          paddingBottom: mobileResponsive ? '64px' : '0',
+          paddingBottom: mobileResponsive ? '80px' : '0',
+          maxHeight: '100vh',
+          height: '100vh',
         }}
         onClick={handleLayoutBodyClick}
       >
@@ -91,13 +92,13 @@ const AppBaseLayout: React.FC<AppBaseLayoutProps> = ({ children }) => {
                 ? 'px-0 !max-w-[100vw] !overflow-x-hidden'
                 : tabletResponsive
                   ? 'px-5 py-4'
-                  : 'px-[10%] py-6'
+                  : 'px-[10%] pt-4'
             }`}
             style={{ minHeight: '100vh' }}
           >
             {children}
           </div>
-          {!mobileResponsive && (
+          {/* {!mobileResponsive && (
             <Footer className="shadow-sm border-t border-border/100 !py-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 dark:text-white flex justify-center items-center w-full">
               <div className="!mx-auto w-full flex flex-col py-0 items-center justify-center">
                 <Image
@@ -112,7 +113,7 @@ const AppBaseLayout: React.FC<AppBaseLayoutProps> = ({ children }) => {
                 </p>
               </div>
             </Footer>
-          )}
+          )} */}
         </Content>
       </Layout>
 
