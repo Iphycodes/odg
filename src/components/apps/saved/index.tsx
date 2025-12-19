@@ -1,13 +1,18 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { Modal, Input, Button } from 'antd';
+import { Input, Button, Badge } from 'antd';
 import { motion } from 'framer-motion';
-import { Search, Grid, List, X, BookmarkX } from 'lucide-react';
+import { Search, Grid, List, X, BookmarkX, MessageCircle, Bookmark } from 'lucide-react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { mockMarketItems } from '@grc/_shared/constant';
 import ModernItemPost from '@grc/components/apps/item-post-new';
 import ProductListingSkeleton from '../item-post-new/lib/product-listing-skeleton';
 import { mediaSize, useMediaQuery } from '@grc/_shared/components/responsiveness';
+import { Currencies } from '@grc/_shared/constant';
+import { numberFormat } from '@grc/_shared/helpers';
+import Image from 'next/image';
+import Product from '../product';
+import ItemDetailModal from '../item-detail-modal';
 
 const SavedItems = () => {
   const router = useRouter();
@@ -20,12 +25,13 @@ const SavedItems = () => {
   const [filteredItems, setFilteredItems] = useState<any[]>([]);
   const [searchValue, setSearchValue] = useState('');
   const isMobile = useMediaQuery(mediaSize.mobile);
+  const [selectedProductId, setSelectedProductId] = useState('');
+  const [isSaved, setIsSaved] = useState(false);
 
   // Load saved items from localStorage
   const loadSavedItems = () => {
     try {
       const savedItemIds = JSON.parse(localStorage.getItem('savedItems') || '[]');
-      // Filter mockMarketItems to only include saved items
       const saved = mockMarketItems.filter((item) => savedItemIds.includes(item.id));
       setSavedItems(saved);
       setFilteredItems(saved);
@@ -36,15 +42,35 @@ const SavedItems = () => {
     }
   };
 
-  useEffect(() => {
-    // Load saved items on mount
-    loadSavedItems();
+  const handleBookmark = (item: any) => {
+    try {
+      const savedItems = JSON.parse(localStorage.getItem('savedItems') || '[]');
 
+      if (isSaved) {
+        const updatedItems = savedItems.filter((itemId: string | number) => itemId !== item?.id);
+        localStorage.setItem('savedItems', JSON.stringify(updatedItems));
+        setIsSaved(false);
+      } else {
+        if (!savedItems.includes(item?.id)) {
+          savedItems.push(item?.id);
+          localStorage.setItem('savedItems', JSON.stringify(savedItems));
+        }
+        setIsSaved(true);
+      }
+
+      // Dispatch custom event to notify other components
+      window.dispatchEvent(new Event('savedItemsChanged'));
+    } catch (error) {
+      console.error('Error managing bookmarks:', error);
+    }
+  };
+
+  useEffect(() => {
+    loadSavedItems();
     const timer = setTimeout(() => setIsLoading(false), 1000);
     return () => clearTimeout(timer);
   }, []);
 
-  // Listen for storage changes (when items are bookmarked/unbookmarked)
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'savedItems') {
@@ -52,7 +78,6 @@ const SavedItems = () => {
       }
     };
 
-    // Custom event listener for same-tab updates
     const handleCustomStorageChange = () => {
       loadSavedItems();
     };
@@ -66,7 +91,6 @@ const SavedItems = () => {
     };
   }, []);
 
-  // Comprehensive search function (matching market page logic)
   const handleSearch = () => {
     if (searchValue.trim() === '') {
       setFilteredItems(savedItems);
@@ -77,34 +101,18 @@ const SavedItems = () => {
     const searchTerm = searchValue.toLowerCase().trim();
 
     const filtered = savedItems.filter((item) => {
-      // Search in item name
       const nameMatch = item.itemName?.toLowerCase().includes(searchTerm);
-
-      // Search in description
       const descriptionMatch = item.description?.toLowerCase().includes(searchTerm);
-
-      // Search in category
       const categoryMatch = item.category?.toLowerCase().includes(searchTerm);
-
-      // Search in product tags
       const tagsMatch = item.productTags?.some((tag: string) =>
         tag.toLowerCase().includes(searchTerm)
       );
-
-      // Search in condition
       const conditionMatch = item.condition?.toLowerCase().includes(searchTerm);
-
-      // Search in price (convert price to readable format)
       const priceString = (item.askingPrice?.price / 100).toString();
       const priceMatch = priceString.includes(searchTerm);
-
-      // Search in business name
       const businessMatch = item.postUserProfile?.businessName?.toLowerCase().includes(searchTerm);
-
-      // Search in username
       const usernameMatch = item.postUserProfile?.userName?.toLowerCase().includes(searchTerm);
 
-      // Return true if any field matches
       return (
         nameMatch ||
         descriptionMatch ||
@@ -125,7 +133,7 @@ const SavedItems = () => {
     setIsLoading(true);
     setTimeout(() => {
       handleSearch();
-    }, 2000);
+    }, 1000);
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -134,7 +142,7 @@ const SavedItems = () => {
 
   const handleClearSearch = () => {
     setSearchValue('');
-    setFilteredItems(savedItems); // Reset to all saved items
+    setFilteredItems(savedItems);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -143,7 +151,6 @@ const SavedItems = () => {
     }
   };
 
-  // Auto-search when search value is cleared
   useEffect(() => {
     if (searchValue === '') {
       setFilteredItems(savedItems);
@@ -157,14 +164,31 @@ const SavedItems = () => {
     router.push(`?${newParams.toString()}`, { scroll: false });
   };
 
-  const handleChat = () => {
-    console.log('Opening chat with vendor');
-    router.push(`/chats`);
+  const handleWhatsAppMessage = (item: any) => {
+    const phoneNumber = '2348109362830';
+    const formattedPrice = numberFormat(item.askingPrice?.price / 100, Currencies.NGN);
+
+    const message = `Hi, Odogwu laptops,
+I am interested in this item.
+
+${item.itemName}
+${item.description}
+Price: ${formattedPrice}`;
+
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+
+    window.open(whatsappUrl, '_blank');
   };
 
   const handleImageClick = (item: any) => {
-    setSelectedItem(item);
-    setIsModalVisible(true);
+    if (!isMobile) {
+      setSelectedItem(item);
+      setIsModalVisible(true);
+    } else {
+      setSelectedItem(item);
+      setSelectedProductId(item?.id);
+    }
   };
 
   const containerVariants = {
@@ -216,73 +240,133 @@ const SavedItems = () => {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
       >
         {filteredItems.map((item) => (
           <motion.div
             key={item.id}
             variants={itemVariants}
-            className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300"
+            className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col"
           >
-            {/* Image Container with Condition Badge */}
-            <div className="relative aspect-square" onClick={() => handleImageClick(item)}>
-              <img
+            {/* Image Container */}
+            <div
+              className="relative aspect-square cursor-pointer group overflow-hidden"
+              onClick={() => handleImageClick(item)}
+            >
+              <Image
                 src={item?.postImgUrls?.[0]}
                 alt={item?.itemName}
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
+                fill
+                className="object-cover group-hover:scale-110 transition-transform duration-300"
               />
-              <div className="absolute top-2 left-2">
-                <span
-                  className={`
-                px-2 py-1 rounded-full text-xs font-medium
-                ${
-                  item?.condition === 'Brand New'
-                    ? 'bg-green-500 text-white'
-                    : item?.condition === 'Fairly Used'
-                      ? 'bg-blue text-white'
-                      : 'bg-yellow-500 text-white'
+
+              {/* Availability Badge */}
+              <Badge
+                className={`absolute top-2 left-2 backdrop-blur-md !rounded-lg shadow-lg ${
+                  item?.availability
+                    ? 'bg-white/10 border border-emerald-300/30'
+                    : 'bg-white/10 border border-gray-300/30'
+                }`}
+                count={
+                  <div
+                    className={`px-1 py-1 text-[10px] !flex gap-1 items-center font-semibold ${
+                      item?.availability ? 'text-emerald-100' : 'text-gray-200'
+                    }`}
+                  >
+                    <div
+                      className={`w-1 h-1 rounded-full ${
+                        item?.availability
+                          ? 'bg-emerald-400 animate-pulse shadow-[0_0_12px_rgba(52,211,153,0.8)]'
+                          : 'bg-gray-300'
+                      }`}
+                    />
+                    <span>{item?.availability ? 'Available' : 'Sold Out'}</span>
+                  </div>
                 }
-              `}
+              />
+
+              {/* Condition Badge */}
+              <div className="absolute top-2 right-2">
+                <span
+                  className={`px-2 py-1 rounded-full text-[10px] font-semibold backdrop-blur-sm ${
+                    item?.condition === 'Brand New'
+                      ? 'bg-green-500/90 text-white'
+                      : item?.condition === 'Uk Used'
+                        ? 'bg-blue-500/90 text-white'
+                        : 'bg-yellow-500/90 text-white'
+                  }`}
                 >
                   {item?.condition}
                 </span>
               </div>
-              {item?.sponsored && (
-                <div className="absolute top-2 right-2">
-                  <span className="bg-gray-900/70 text-white px-2 py-1 rounded-full text-xs">
-                    Sponsored
-                  </span>
-                </div>
-              )}
             </div>
 
             {/* Product Details */}
-            <div className="p-3">
-              {/* Title and Price Row */}
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="font-medium text-sm truncate flex-1 dark:text-white">
-                  {item?.itemName}
-                </h3>
-                <span className="text-sm font-bold text-green-600 dark:text-green-400 whitespace-nowrap ml-2">
-                  ${item?.askingPrice?.price}
+            <div className="p-3 flex flex-col flex-grow">
+              {/* Title */}
+              <h3
+                className="font-semibold text-sm dark:text-white mb-1 line-clamp-2 cursor-pointer hover:text-blue-600 transition-colors"
+                onClick={() => handleImageClick(item)}
+              >
+                {item?.itemName}
+              </h3>
+
+              {/* Price */}
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-lg font-bold bg-gradient-to-r from-orange-500 to-rose-500 bg-clip-text text-transparent">
+                  {numberFormat(item?.askingPrice?.price / 100, Currencies.NGN)}
                 </span>
+                {item?.askingPrice?.negotiable && (
+                  <span className="text-[9px] bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 px-1.5 py-0.5 rounded-full font-medium">
+                    Negotiable
+                  </span>
+                )}
               </div>
 
-              {/* Description and Action Row */}
-              <div className="flex justify-between items-center">
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[55%]">
-                  {item?.description}
-                </p>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleChat();
-                  }}
-                  className="text-xs bg-blue hover:bg-blue text-white px-2 py-1 rounded-full flex items-center gap-1 transition-colors"
-                >
-                  Chat Seller
-                </button>
-              </div>
+              {/* Description */}
+              <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-3 flex-grow">
+                {item?.description}
+              </p>
+
+              {/* Tags */}
+              {item?.productTags && item.productTags.length > 0 && (
+                <div className="flex flex-wrap gap-1 mb-3">
+                  {item.productTags.slice(0, 2).map((tag: string, idx: number) => (
+                    <span
+                      key={idx}
+                      className="px-2 py-0.5 text-[9px] font-medium bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 rounded-full"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                  {item.productTags.length > 2 && (
+                    <span className="px-2 py-0.5 text-[9px] font-medium bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 rounded-full">
+                      +{item.productTags.length - 2}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Action Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleWhatsAppMessage(item);
+                }}
+                className="w-full mb-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-all shadow-sm hover:shadow-md"
+              >
+                <MessageCircle size={14} />
+                Message on WhatsApp
+              </button>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => handleBookmark(item)}
+                className={`w-full bg-neutral-100 !text-neutral-700 border !border-neutral-200 py-2 rounded-lg font-medium flex items-center justify-center gap-1 shadow-sm text-xs`}
+              >
+                <Bookmark size={14} />
+                {isSaved ? 'Remove from Save' : 'Save Item'}
+              </motion.button>
             </div>
           </motion.div>
         ))}
@@ -331,6 +415,7 @@ const SavedItems = () => {
               comments={item?.comments ?? []}
               id={item?.id ?? ''}
               productTags={item?.productTags ?? []}
+              availability={item?.availability ?? true}
             />
           </motion.div>
         ))}
@@ -338,40 +423,48 @@ const SavedItems = () => {
     );
   };
 
+  if (selectedProductId !== '' && isMobile) {
+    return <Product productId={selectedProductId} setSelectedProductId={setSelectedProductId} />;
+  }
+
   return (
     <div className="min-h-screen dark:bg-gray-900/50">
-      <div className={`w-full max-w-7xl mx-auto ${isMobile ? 'px-0' : 'px-4'}`}>
+      <div className={`w-full max-w-7xl mx-auto ${isMobile ? 'px-0 pb-[40px]' : 'px-4'}`}>
         <div className="mb-8">
           <div
             className={`py-5 ${
               isMobile ? 'px-2' : ''
-            } sticky top-0 z-20 backdrop-blur-sm bg-white dark:bg-gray-800`}
+            } sticky top-0 z-20 backdrop-blur-sm bg-white/95 dark:bg-gray-800/95 shadow-sm`}
           >
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h2 className="text-xl font-semibold dark:text-white">My Saved Products</h2>
+                <h2 className="text-2xl font-bold dark:text-white">My Saved Products</h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   {filteredItems.length} {filteredItems.length === 1 ? 'item' : 'items'} saved
                 </p>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 <button
                   onClick={() => handleViewChange('grid')}
-                  className={`flex items-center gap-2 ${
-                    viewType === 'grid' ? 'text-blue-500' : 'text-gray-500 dark:text-gray-400'
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                    viewType === 'grid'
+                      ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                      : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
                   }`}
                 >
-                  <Grid size={20} />
-                  {!isMobile && 'Grid'}
+                  <Grid size={18} />
+                  {!isMobile && <span className="text-sm font-medium">Grid</span>}
                 </button>
                 <button
                   onClick={() => handleViewChange('list')}
-                  className={`flex items-center gap-2 ${
-                    viewType === 'list' ? 'text-blue-500' : 'text-gray-500 dark:text-gray-400'
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                    viewType === 'list'
+                      ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                      : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
                   }`}
                 >
-                  <List size={20} />
-                  {!isMobile && 'List'}
+                  <List size={18} />
+                  {!isMobile && <span className="text-sm font-medium">List</span>}
                 </button>
               </div>
             </div>
@@ -389,7 +482,7 @@ const SavedItems = () => {
                   value={searchValue}
                   onChange={handleSearchChange}
                   onKeyPress={handleKeyPress}
-                  placeholder="Search Saved Products..."
+                  placeholder="Search saved products..."
                   className={`${isMobile ? 'h-10' : 'h-12'} !w-full ${
                     isMobile ? 'pl-7' : 'pl-11'
                   } ${searchValue ? 'pr-10' : 'pr-4'} ${
@@ -418,11 +511,12 @@ const SavedItems = () => {
               </Button>
             </div>
           </div>
+
           {viewType === 'grid' ? renderProductGrid() : renderProductList()}
         </div>
 
         {/* Product Detail Modal */}
-        <Modal
+        {/* <Modal
           open={isModalVisible}
           onCancel={() => setIsModalVisible(false)}
           footer={null}
@@ -437,14 +531,32 @@ const SavedItems = () => {
               description={selectedItem?.description ?? ''}
               postImgurls={selectedItem?.postImgUrls ?? []}
               askingPrice={selectedItem?.askingPrice ?? {}}
-              condition={selectedItem?.condition ?? 'Brand New'}
+              condition={selectedItem?.condition ?? ''}
               itemName={selectedItem?.itemName ?? ''}
               comments={selectedItem?.comments ?? []}
               id={selectedItem?.id ?? ''}
               productTags={selectedItem?.productTags ?? []}
+              availability={selectedItem?.availability ?? true}
             />
           )}
-        </Modal>
+        </Modal> */}
+
+        <ItemDetailModal
+          open={isModalVisible}
+          onClose={() => setIsModalVisible(false)}
+          item={{
+            description: selectedItem?.description ?? '',
+            sponsored: false,
+            postUserProfile: selectedItem?.postUserProfile ?? {},
+            postImgurls: selectedItem?.postImgUrls ?? [],
+            askingPrice: selectedItem?.askingPrice ?? {},
+            condition: selectedItem?.condition ?? '',
+            comments: selectedItem?.comments ?? '',
+            itemName: selectedItem?.itemName ?? '',
+            id: selectedItem?.id ?? '',
+            productTags: selectedItem?.productTags ?? [],
+          }}
+        />
       </div>
     </div>
   );
