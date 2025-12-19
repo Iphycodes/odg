@@ -18,6 +18,8 @@ import { mockMarketItemType } from '@grc/_shared/namespace';
 import { numberFormat } from '@grc/_shared/helpers';
 import { Badge, Button, Tooltip } from 'antd';
 import { mediaSize, useMediaQuery } from '@grc/_shared/components/responsiveness';
+import { isEmpty } from 'lodash';
+import Cookie from 'js-cookie';
 
 interface ProductProps {
   productId: string;
@@ -101,14 +103,22 @@ const Product = ({ productId, setSelectedProductId }: ProductProps) => {
 
   const handleWhatsAppMessage = () => {
     const phoneNumber = '2348109362830';
-    const formattedPrice = numberFormat((item.askingPrice?.price ?? 0) / 100, Currencies.NGN);
+    const formattedPrice = numberFormat((item?.askingPrice?.price ?? 0) / 100, Currencies.NGN);
+    const affiliateId = Cookie.get('odg-laptops-affiliateId') ?? '';
 
-    const message = `Hi, Odogwu laptops,
+    // Create the pre-filled message
+    const message = `
+Hi, Odogwu laptops,
 I am interested in this item.
 
-${item.itemName}
-${item.description}
-Price: ${formattedPrice}`;
+Item Id: ${item?.id}
+Name: ${item?.itemName}
+Description: ${item?.description}
+Price: ${formattedPrice}
+${!isEmpty(affiliateId) ? `Referral Code: ${affiliateId}` : ''}
+`;
+
+    console.log('message to send::::', message);
 
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
@@ -141,303 +151,229 @@ Price: ${formattedPrice}`;
   console.log(isLoading);
 
   return (
-    <motion.div
-      variants={itemVariants}
-      className={`bg-white dark:bg-gray-800 rounded-lg transition-all duration-300 ${
-        isMobile ? 'mt-0' : 'mt-10'
-      }`}
-    >
-      <div className="sticky top-0 left-0 w-full py-4 !z-50 bg-white border-b mb-5">
+    <>
+      <div
+        className={`${
+          isMobile ? 'fixed py-2' : 'sticky  py-4'
+        } top-0 left-0 w-full !z-50 bg-white border-b mb-5`}
+      >
         <Button
           type="link"
           onClick={() => handleGoBack()}
-          className="text-neutral-500 hover:text-blue font-semibold flex text-base gap-1 items-center"
+          className={`text-neutral-500 hover:text-blue font-semibold flex text-base gap-1 items-center bg-background`}
         >
           <i className="ri-arrow-left-s-line"></i>
           <span>Back</span>
         </Button>
       </div>
-      <div className={`${isMobile ? 'px-2' : ''}`}>
-        {/* Seller Info */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="relative w-12 h-12">
-            <Image
-              src={item.postUserProfile?.profilePicUrl ?? ''}
-              alt="Seller"
-              fill
-              className="rounded-full object-cover"
-            />
-            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white" />
-          </div>
-          <div>
-            <h3 className="font-medium text-lg">
-              {item.postUserProfile?.businessName || item.postUserProfile?.userName}
-            </h3>
-            <div className="flex items-center gap-3 text-sm text-gray-500">
-              <span className="flex items-center gap-1">
-                <MapPin size={14} />
-                Kaduna State, Zaria
-              </span>
-              <span className="flex items-center gap-1">
-                <Clock size={14} />
-                2d ago
-              </span>
+      <motion.div
+        variants={itemVariants}
+        className={`bg-white dark:bg-gray-800 rounded-lg transition-all duration-300 ${
+          isMobile ? 'pt-[60px] pb-[200px]' : 'mt-10'
+        }`}
+      >
+        <div className={`${isMobile ? 'px-2' : ''}`}>
+          {/* Seller Info */}
+          <div className="flex items-center gap-3 mb-6">
+            <div className="relative w-12 h-12">
+              <Image
+                src={item.postUserProfile?.profilePicUrl ?? ''}
+                alt="Seller"
+                fill
+                className="rounded-full object-cover"
+              />
+              <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white" />
+            </div>
+            <div>
+              <h3 className="font-medium text-lg">
+                {item.postUserProfile?.businessName || item.postUserProfile?.userName}
+              </h3>
+              <div className="flex items-center gap-3 text-sm text-gray-500">
+                <span className="flex items-center gap-1">
+                  <MapPin size={14} />
+                  Kaduna State, Zaria
+                </span>
+                <span className="flex items-center gap-1">
+                  <Clock size={14} />
+                  2d ago
+                </span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className={`flex ${isMobile ? 'flex-col gap-4' : ' gap-8'}`}>
-          {/* Left Section - Image */}
-          <div
-            className={`relative w-full md:w-3/5 overflow-hidden ${
-              isMobile ? 'rounded-sm' : 'rounded-md'
-            }`}
-          >
-            <div className="relative aspect-square">
-              <AnimatePresence initial={false} custom={slideDirection}>
-                <motion.div
-                  key={currentImageIndex}
-                  custom={slideDirection}
-                  initial={{ x: slideDirection * 100 + '%', opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  exit={{ x: slideDirection * -100 + '%', opacity: 0 }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                  className={`absolute inset-0 rounded-sm ${!isMobile ? 'cursor-pointer' : ''}`}
-                >
-                  <Image
-                    src={item?.postImgUrls?.[currentImageIndex] ?? ''}
-                    alt={item?.itemName ?? ''}
-                    fill
-                    className="object-cover"
-                    priority
-                  />
-                </motion.div>
-              </AnimatePresence>
-
-              {/* Navigation controls */}
-              {(item?.postImgUrls?.length ?? 0) > 1 && (
-                <>
-                  {currentImageIndex > 0 && (
-                    <button
-                      onClick={prevImage}
-                      className={`absolute left-1 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white ${
-                        isMobile ? 'p-1' : 'p-2'
-                      } rounded-full backdrop-blur-sm transition-colors`}
-                    >
-                      <ChevronLeft className={`${isMobile ? 'w-4 h-4' : 'w-6 h-6'}`} />
-                    </button>
-                  )}
-
-                  {currentImageIndex < (item?.postImgUrls?.length ?? 0) - 1 && (
-                    <button
-                      onClick={nextImage}
-                      className={`absolute right-1 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white ${
-                        isMobile ? 'p-1' : 'p-2'
-                      } rounded-full backdrop-blur-sm transition-colors`}
-                    >
-                      <ChevronRight className={`${isMobile ? 'w-4 h-4' : 'w-6 h-6'}`} />
-                    </button>
-                  )}
-
-                  {/* Dots indicator */}
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
-                    {item?.postImgUrls?.map((_, index) => (
-                      <div
-                        key={index}
-                        className={`w-2 h-2 rounded-full ${
-                          currentImageIndex === index
-                            ? 'bg-white'
-                            : 'bg-white/30 border border-white/60'
-                        } transition-all duration-200`}
-                      />
-                    ))}
-                  </div>
-                </>
-              )}
-
-              {/* <Badge
-                className="absolute top-3 right-3 backdrop-blur-lg !rounded-md"
-                count={
-                  <span className="px-2 py-1 text-sm text-white font-semibold">
-                    {item?.condition}
-                  </span>
-                }
-                color={item?.condition === 'Brand New' ? 'green' : 'blue'}
-              /> */}
-
-              <Badge
-                className="absolute top-3 right-3 backdrop-blur-2xl !rounded-full shadow-2xl"
-                count={
-                  <span className="px-2 py-1 !text-[10px] !text-white font-semibold">
-                    {item?.condition}
-                  </span>
-                }
-                color={'white'}
-              />
-
-              <Badge
-                className={`absolute top-3 left-3 backdrop-blur-2xl !rounded-full shadow-2xl ${
-                  item
-                    ? 'bg-gradient-to-br from-emerald-400/30 via-green-400/25 to-teal-400/30 border border-emerald-200/50'
-                    : 'bg-gradient-to-br from-red-400/25 via-red-400/20 to-red-500/25 border border-red-200/40'
-                }`}
-                count={
-                  <div
-                    className={`px-2 py-1 text-[10px] !flex gap-2 items-center font-semibold ${
-                      item.availability
-                        ? 'text-white drop-shadow-[0_2px_12px_rgba(16,185,129,0.8)]'
-                        : 'text-gray-200 drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
-                    }`}
+          <div className={`flex ${isMobile ? 'flex-col gap-4' : ' gap-8'}`}>
+            {/* Left Section - Image */}
+            <div
+              className={`relative w-full md:w-3/5 overflow-hidden ${
+                isMobile ? 'rounded-sm' : 'rounded-md'
+              }`}
+            >
+              <div className="relative aspect-square">
+                <AnimatePresence initial={false} custom={slideDirection}>
+                  <motion.div
+                    key={currentImageIndex}
+                    custom={slideDirection}
+                    initial={{ x: slideDirection * 100 + '%', opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: slideDirection * -100 + '%', opacity: 0 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    className={`absolute inset-0 rounded-sm ${!isMobile ? 'cursor-pointer' : ''}`}
                   >
+                    <Image
+                      src={item?.postImgUrls?.[currentImageIndex] ?? ''}
+                      alt={item?.itemName ?? ''}
+                      fill
+                      className="object-cover"
+                      priority
+                    />
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* Navigation controls */}
+                {(item?.postImgUrls?.length ?? 0) > 1 && (
+                  <>
+                    {currentImageIndex > 0 && (
+                      <button
+                        onClick={prevImage}
+                        className={`absolute left-1 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white ${
+                          isMobile ? 'p-1' : 'p-2'
+                        } rounded-full backdrop-blur-sm transition-colors`}
+                      >
+                        <ChevronLeft className={`${isMobile ? 'w-4 h-4' : 'w-6 h-6'}`} />
+                      </button>
+                    )}
+
+                    {currentImageIndex < (item?.postImgUrls?.length ?? 0) - 1 && (
+                      <button
+                        onClick={nextImage}
+                        className={`absolute right-1 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white ${
+                          isMobile ? 'p-1' : 'p-2'
+                        } rounded-full backdrop-blur-sm transition-colors`}
+                      >
+                        <ChevronRight className={`${isMobile ? 'w-4 h-4' : 'w-6 h-6'}`} />
+                      </button>
+                    )}
+
+                    {/* Dots indicator */}
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
+                      {item?.postImgUrls?.map((_, index) => (
+                        <div
+                          key={index}
+                          className={`w-2 h-2 rounded-full ${
+                            currentImageIndex === index
+                              ? 'bg-white'
+                              : 'bg-white/30 border border-white/60'
+                          } transition-all duration-200`}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+                <Badge
+                  className="absolute top-3 right-3 backdrop-blur-2xl !rounded-full shadow-2xl"
+                  count={
+                    <span className="px-2 py-1 !text-[10px] !text-white font-semibold">
+                      {item?.condition}
+                    </span>
+                  }
+                  color={'white'}
+                />
+
+                <Badge
+                  className={`absolute top-3 left-3 backdrop-blur-2xl !rounded-full shadow-2xl ${
+                    item
+                      ? 'bg-gradient-to-br from-emerald-400/30 via-green-400/25 to-teal-400/30 border border-emerald-200/50'
+                      : 'bg-gradient-to-br from-red-400/25 via-red-400/20 to-red-500/25 border border-red-200/40'
+                  }`}
+                  count={
                     <div
-                      className={`relative w-2 h-2 rounded-full ${
+                      className={`px-2 py-1 text-[10px] !flex gap-2 items-center font-semibold ${
                         item.availability
-                          ? 'bg-emerald-300 shadow-[0_0_16px_rgba(52,211,153,1)] animate-pulse'
-                          : 'bg-red-300 shadow-[0_0_8px_rgba(156,163,175,0.6)]'
+                          ? 'text-white drop-shadow-[0_2px_12px_rgba(16,185,129,0.8)]'
+                          : 'text-gray-200 drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
                       }`}
                     >
-                      {item.availability && (
-                        <div className="absolute inset-0 rounded-full bg-emerald-200 animate-ping opacity-75" />
-                      )}
+                      <div
+                        className={`relative w-2 h-2 rounded-full ${
+                          item.availability
+                            ? 'bg-emerald-300 shadow-[0_0_16px_rgba(52,211,153,1)] animate-pulse'
+                            : 'bg-red-300 shadow-[0_0_8px_rgba(156,163,175,0.6)]'
+                        }`}
+                      >
+                        {item.availability && (
+                          <div className="absolute inset-0 rounded-full bg-emerald-200 animate-ping opacity-75" />
+                        )}
+                      </div>
+                      <span className="tracking-wide">
+                        {item.availability ? 'Available' : 'Sold Out'}
+                      </span>
                     </div>
-                    <span className="tracking-wide">
-                      {item.availability ? 'Available' : 'Sold Out'}
-                    </span>
-                  </div>
-                }
-                color={item.availability ? 'green' : 'default'}
-              />
-            </div>
-          </div>
-
-          {/* Right Section - Details */}
-          <div
-            className={`${isMobile ? 'w-full' : 'w-1/2 !min-h-[100%] overflow-y-auto'} relative`}
-          >
-            {/* Item Details */}
-            <div className="space-y-6">
-              {/* {isMobile && (
-                <div className="flex items-center justify-end">
-                  <div className="flex items-center gap-4">
-                    <Tooltip title={isSaved ? 'Remove from saved' : 'Save item'}>
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={handleBookmark}
-                        className="group"
-                      >
-                        <Bookmark
-                          className={`w-6 h-6 ${
-                            isSaved
-                              ? 'fill-blue-500 text-blue-500'
-                              : 'text-gray-400 group-hover:text-gray-600'
-                          } transition-colors`}
-                        />
-                      </motion.button>
-                    </Tooltip>
-
-                    <Tooltip title="Share">
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={handleShare}
-                        className="group"
-                      >
-                        <Share2 className="w-6 h-6 text-gray-400 group-hover:text-gray-600 transition-colors" />
-                      </motion.button>
-                    </Tooltip>
-                  </div>
-                </div>
-              )} */}
-
-              <div>
-                <h2 className="text-xl font-semibold mb-1 cursor-pointer">{item?.itemName}</h2>
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-rose-500 bg-clip-text text-transparent">
-                    {numberFormat((item.askingPrice?.price ?? 0) / 100, Currencies.NGN)}
-                  </span>
-                  {item.askingPrice?.negotiable && (
-                    <span className="text-[12px] bg-gradient-to-r from-orange-50 to-rose-50 dark:from-orange-900/20 dark:to-rose-900/20 text-orange-600 dark:text-orange-400 px-2 py-1 rounded-full font-medium">
-                      Negotiable
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Product Tags */}
-              {item.productTags && item.productTags.length > 0 && (
-                <div className="flex flex-wrap gap-2 py-2">
-                  {item.productTags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="px-3 py-1 text-xs font-medium bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {/* {!isMobile && (
-                <div className="flex items-center justify-end">
-                  <div className="flex items-center gap-4">
-                    <Tooltip title={isSaved ? 'Remove from saved' : 'Save item'}>
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={handleBookmark}
-                        className="group"
-                      >
-                        <Bookmark
-                          className={`w-6 h-6 ${
-                            isSaved
-                              ? 'fill-blue-500 text-blue-500'
-                              : 'text-gray-400 group-hover:text-gray-600'
-                          } transition-colors`}
-                        />
-                      </motion.button>
-                    </Tooltip>
-
-                    <Tooltip title="Share">
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={handleShare}
-                        className="group"
-                      >
-                        <Share2 className="w-6 h-6 text-gray-400 group-hover:text-gray-600 transition-colors" />
-                      </motion.button>
-                    </Tooltip>
-                  </div>
-                </div>
-              )} */}
-
-              <div>
-                {/* Description */}
-                <div className="bg-gray-50 rounded-lg p-3 mb-3">
-                  <h4 className="font-medium mb-2">Description</h4>
-                  <p className={`text-gray-600 ${!isDescriptionExpanded && 'line-clamp-3'}`}>
-                    {item.description}
-                  </p>
-                  <button
-                    onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                    className="text-blue-600 text-sm mt-2"
-                  >
-                    Show {isDescriptionExpanded ? 'less' : 'more'}
-                  </button>
-                </div>
+                  }
+                  color={item.availability ? 'green' : 'default'}
+                />
               </div>
             </div>
 
-            {/* Action Button */}
+            {/* Right Section - Details */}
             <div
-              className={`${
-                isMobile
-                  ? 'fixed max-w-full bottom-[64px] py-4 left-0 px-2'
-                  : 'absolute bottom-0 pt-4'
-              } w-full bg-white mt-6 border-t`}
+              className={`${isMobile ? 'w-full' : 'w-1/2 !min-h-[100%] overflow-y-auto'} relative`}
             >
-              {/* <motion.button
+              {/* Item Details */}
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold mb-1 cursor-pointer">{item?.itemName}</h2>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-rose-500 bg-clip-text text-transparent">
+                      {numberFormat((item.askingPrice?.price ?? 0) / 100, Currencies.NGN)}
+                    </span>
+                    {item.askingPrice?.negotiable && (
+                      <span className="text-[12px] bg-gradient-to-r from-orange-50 to-rose-50 dark:from-orange-900/20 dark:to-rose-900/20 text-orange-600 dark:text-orange-400 px-2 py-1 rounded-full font-medium">
+                        Negotiable
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Product Tags */}
+                {item.productTags && item.productTags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 py-2">
+                    {item.productTags.map((tag, index) => (
+                      <span
+                        key={index}
+                        className="px-3 py-1 text-xs font-medium bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <div>
+                  {/* Description */}
+                  <div className="bg-gray-50 rounded-lg p-3 mb-3">
+                    <h4 className="font-medium mb-2">Description</h4>
+                    <p className={`text-gray-600 ${!isDescriptionExpanded && 'line-clamp-3'}`}>
+                      {item.description}
+                    </p>
+                    <button
+                      onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                      className="text-blue-600 text-sm mt-2"
+                    >
+                      Show {isDescriptionExpanded ? 'less' : 'more'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Button */}
+              <div
+                className={`${
+                  isMobile
+                    ? 'fixed max-w-full bottom-[64px] py-4 left-0 px-2'
+                    : 'absolute bottom-0 pt-4'
+                } w-full bg-white mt-6 border-t`}
+              >
+                {/* <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleWhatsAppMessage}
@@ -446,44 +382,45 @@ Price: ${formattedPrice}`;
                 <MessageCircle size={20} />
                 Message on WhatsApp
               </motion.button> */}
-              <div className="flex items-center gap-1">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleWhatsAppMessage}
-                  className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2 shadow-sm"
-                >
-                  <MessageCircle size={20} />
-                  Whatsapp
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleBookmark}
-                  className={`w-full bg-neutral-100 !text-neutral-700 border !border-neutral-200 py-3 rounded-lg font-medium flex items-center justify-center gap-2 shadow-sm ${
-                    isSaved ? 'text-xs' : ''
-                  }`}
-                >
-                  <Bookmark size={20} />
-                  {isSaved ? 'Remove from Save' : 'Save Item'}
-                </motion.button>
-
-                <Tooltip title="Share">
+                <div className="flex items-center gap-1">
                   <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={handleShare}
-                    className="px-2 border border-neutral-200 py-3 rounded-lg font-medium flex items-center justify-center gap-1 shadow-sm"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleWhatsAppMessage}
+                    className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2 shadow-sm"
                   >
-                    <Share2 className="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                    <MessageCircle size={20} />
+                    Whatsapp
                   </motion.button>
-                </Tooltip>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleBookmark}
+                    className={`w-full bg-neutral-100 !text-neutral-700 border !border-neutral-200 py-3 rounded-lg font-medium flex items-center justify-center gap-2 shadow-sm ${
+                      isSaved ? 'text-xs' : ''
+                    }`}
+                  >
+                    <Bookmark size={20} />
+                    {isSaved ? 'Remove from Save' : 'Save Item'}
+                  </motion.button>
+
+                  <Tooltip title="Share">
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={handleShare}
+                      className="px-2 border border-neutral-200 py-3 rounded-lg font-medium flex items-center justify-center gap-1 shadow-sm"
+                    >
+                      <Share2 className="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                    </motion.button>
+                  </Tooltip>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+    </>
   );
 };
 

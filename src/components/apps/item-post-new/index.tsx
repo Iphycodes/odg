@@ -8,6 +8,8 @@ import TruncatedDescription from '@grc/_shared/components/truncated-description'
 import ItemDetailModal from '../item-detail-modal';
 import { mediaSize, useMediaQuery } from '@grc/_shared/components/responsiveness';
 import { Currencies } from '@grc/_shared/constant';
+import Cookie from 'js-cookie';
+import { isEmpty } from 'lodash';
 
 interface ItemPostProps {
   description: string;
@@ -105,14 +107,21 @@ const ModernItemPost: React.FC<ItemPostProps> = ({
   const handleWhatsAppMessage = () => {
     const phoneNumber = '2348109362830';
     const formattedPrice = numberFormat(askingPrice?.price / 100, Currencies.NGN);
+    const affiliateId = Cookie.get('odg-laptops-affiliateId') ?? '';
 
     // Create the pre-filled message
-    const message = `Hi, Odogwu laptops,
+    const message = `
+Hi, Odogwu laptops,
 I am interested in this item.
 
-${itemName}
-${description}
-Price: ${formattedPrice}`;
+Item Id: ${id}
+Name: ${itemName}
+Description: ${description}
+Price: ${formattedPrice}
+${!isEmpty(affiliateId) ? `Referral Code: ${affiliateId}` : ''}
+`;
+
+    console.log('message to send::::', message);
 
     // Encode the message for URL
     const encodedMessage = encodeURIComponent(message);

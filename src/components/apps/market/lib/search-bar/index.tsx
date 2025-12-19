@@ -30,6 +30,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, className, section }) =
     { value: 'lenovo', label: 'Lenovo' },
     { value: 'toshiba', label: 'Toshiba' },
     { value: 'macbook', label: 'MacBook' },
+    { value: 'accessories', label: 'Chargers' },
   ];
 
   const statusOptions: CategoryOption[] = [
@@ -80,6 +81,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, className, section }) =
             }`}
             options={section === 'market' ? categories : statusOptions}
             suffixIcon={<ChevronDown size={16} />}
+            listHeight={400} // Height in pixels (default is 256px)
           />
         }
 

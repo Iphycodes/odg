@@ -13,8 +13,9 @@ import {
 import Image from 'next/image';
 import { numberFormat } from '@grc/_shared/helpers';
 import { Currencies } from '@grc/_shared/constant';
-import { capitalize, startCase } from 'lodash';
+import { capitalize, isEmpty, startCase } from 'lodash';
 import { mediaSize, useMediaQuery } from '@grc/_shared/components/responsiveness';
+import Cookie from 'js-cookie';
 
 interface ItemDetailProps {
   item: {
@@ -93,14 +94,21 @@ const ItemDetail: React.FC<ItemDetailProps> = ({ item, isSellerView }) => {
 
   const handleWhatsAppMessage = () => {
     const phoneNumber = '2348109362830';
-    const formattedPrice = numberFormat(item.askingPrice?.price / 100, Currencies.NGN);
+    const formattedPrice = numberFormat(item?.askingPrice?.price / 100, Currencies.NGN);
+    const affiliateId = Cookie.get('odg-laptops-affiliateId') ?? '';
 
-    const message = `Hi, Odogwu laptops,
+    // Create the pre-filled message
+    const message = `
+Hi, Odogwu laptops,
 I am interested in this item.
 
-${item.itemName}
-${item.description}
-Price: ${formattedPrice}`;
+Item Id: ${item?.id}
+Name: ${item?.itemName}
+Description: ${item?.description}
+Price: ${formattedPrice}
+${!isEmpty(affiliateId) ? `Referral Code: ${affiliateId}` : ''}
+`;
+    console.log('message to send::::', message);
 
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;

@@ -17,7 +17,7 @@ const FilterPanel = ({
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
   setShowFilters: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-  const [priceRange, setPriceRange] = useState<number[]>([0, 500000000]); // In cents
+  const [priceRange, setPriceRange] = useState<number[]>([0, 100000000]); // In cents
   const [selectedConditions, setSelectedConditions] = useState<Condition[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
   const [activeSection, setActiveSection] = useState<'all' | 'price' | 'condition' | 'category'>(
@@ -144,7 +144,7 @@ const FilterPanel = ({
                   <Slider
                     range
                     min={0}
-                    max={500000000}
+                    max={100000000}
                     step={1000000}
                     value={priceRange}
                     onChange={(value: number[]) => setPriceRange(value)}
@@ -155,8 +155,10 @@ const FilterPanel = ({
                 </div>
 
                 <div className="flex justify-between text-sm text-gray-500 mt-1">
-                  <span>{numberFormat(priceRange[0] / 100, Currencies.NGN)}</span>
-                  <span>{numberFormat(priceRange[1] / 100, Currencies.NGN)}</span>
+                  {/* <span>{numberFormat(priceRange[0] / 100, Currencies.NGN)}</span>
+                  <span>{numberFormat(priceRange[1] / 100, Currencies.NGN)}</span> */}
+                  <span>{numberFormat(0, Currencies.NGN)}</span>
+                  <span>{numberFormat(1000000, Currencies.NGN)}</span>
                 </div>
               </div>
             </motion.div>
