@@ -13,7 +13,7 @@ const Home = () => {
     const affiliateIdString = searchParams?.get('affiliateId');
 
     if (affiliateIdString) {
-      Cookie.set('odg-laptops-affiliateId', affiliateIdString);
+      Cookie.set('odg-laptops-affiliateId', affiliateIdString, { expires: 3 });
     }
     // Clean URL without page reload
     const newUrl = window.location.pathname;
