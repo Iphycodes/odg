@@ -1,12 +1,21 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Badge, Col, Empty, Row } from 'antd';
+import { Badge, Col, Empty, Row, message as antMessage } from 'antd';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SlidersHorizontal, Grid, List, MessageCircle, Bookmark } from 'lucide-react';
-import SidePanel from './lib/side-panel';
+import {
+  SlidersHorizontal,
+  Grid,
+  List,
+  MessageCircle,
+  Bookmark,
+  ShoppingCart,
+  ShoppingBag,
+} from 'lucide-react';
+import { Tooltip } from 'antd';
 import FilterPanel from './lib/filter-panel';
 import SearchBar from './lib/search-bar';
 import { mockMarketItems, Currencies } from '@grc/_shared/constant';
 import ModernItemPost from '../item-post-new';
+import ItemDetailModal from '../item-detail-modal';
 import { mediaSize, useMediaQuery } from '@grc/_shared/components/responsiveness';
 import { Shop } from 'iconsax-react';
 import NotificationsDrawer from '../notification-drawer';
@@ -16,6 +25,8 @@ import Product from '../product';
 import { numberFormat } from '@grc/_shared/helpers';
 import Image from 'next/image';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { CartItem } from '@grc/_shared/namespace/cart';
+import { setBuyNowItem } from '@grc/_shared/namespace/buy';
 
 const Market = () => {
   const router = useRouter();
@@ -27,10 +38,18 @@ const Market = () => {
   const [selectedProductId, setSelectedProductId] = useState('');
   const [isSaved, setIsSaved] = useState<boolean>(false);
 
+  // Modal state for grid view item detail
+  const [gridModalOpen, setGridModalOpen] = useState(false);
+  const [gridModalItem, setGridModalItem] = useState<any>(null);
+
+  const isMobile = useMediaQuery(mediaSize.mobile);
+  const { shopItems, setShopItems, addToCart, isInCart, cartItems } = useContext(AppContext);
+
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 2000);
     return () => clearTimeout(timer);
   }, []);
+
   const handleBookmark = (item: any) => {
     try {
       const savedItems = JSON.parse(localStorage.getItem('savedItems') || '[]');
@@ -47,11 +66,57 @@ const Market = () => {
         setIsSaved(true);
       }
 
-      // Dispatch custom event to notify other components
       window.dispatchEvent(new Event('savedItemsChanged'));
     } catch (error) {
       console.error('Error managing bookmarks:', error);
     }
+  };
+
+  const handleAddToCart = (item: any) => {
+    const maxQty = item?.quantity ?? 1;
+    const existing = cartItems?.find((i: CartItem) => i.id === item?.id);
+    const currentQty = existing?.quantity || 0;
+
+    if (currentQty >= maxQty) {
+      antMessage.warning(`Maximum quantity (${maxQty}) reached for this item`);
+      return;
+    }
+    if (isInCart(item?.id)) {
+      antMessage.info('Item is already in your cart');
+      return;
+    }
+    const cartItem: CartItem = {
+      id: item?.id,
+      itemName: item?.itemName || '',
+      description: item?.description || '',
+      price: item?.askingPrice?.price || 0,
+      quantity: 1,
+      maxQuantity: maxQty,
+      image: item?.postImgUrls?.[0] || '',
+      condition: item?.condition || '',
+      negotiable: item?.askingPrice?.negotiable || false,
+      sellerName: item?.postUserProfile?.businessName || item?.postUserProfile?.userName || '',
+    };
+    addToCart(cartItem?.id);
+    antMessage.success('Added to cart!');
+  };
+
+  const handleBuyNow = (item: any) => {
+    const maxQty = item?.quantity ?? 1;
+    const buyItem: CartItem = {
+      id: item?.id,
+      itemName: item?.itemName || '',
+      description: item?.description || '',
+      price: item?.askingPrice?.price || 0,
+      quantity: 1,
+      maxQuantity: maxQty,
+      image: item?.postImgUrls?.[0] || '',
+      condition: item?.condition || '',
+      negotiable: item?.askingPrice?.negotiable || false,
+      sellerName: item?.postUserProfile?.businessName || item?.postUserProfile?.userName || '',
+    };
+    setBuyNowItem(buyItem);
+    router.push('/checkout?mode=buynow');
   };
 
   const containerVariants = {
@@ -74,14 +139,9 @@ const Market = () => {
     },
   };
 
-  const isMobile = useMediaQuery(mediaSize.mobile);
-  const isDesktop = useMediaQuery(mediaSize.desktop);
-
   useEffect(() => {
     console.log('toggle:::', toggleNotificationsDrawer);
   }, [toggleNotificationsDrawer]);
-
-  const { shopItems, setShopItems } = useContext(AppContext);
 
   const handleSearch = (searchValue: string, searchCategory: string) => {
     if (!searchValue.trim() && searchCategory === 'all') {
@@ -156,8 +216,14 @@ Price: ${formattedPrice}`;
     window.open(whatsappUrl, '_blank');
   };
 
-  const handleImageClick = (item: any) => {
-    setSelectedProductId(item?.id?.toString());
+  /** Grid view: open modal on desktop, navigate on mobile */
+  const handleGridItemClick = (item: any) => {
+    if (isMobile) {
+      setSelectedProductId(item?.id?.toString());
+    } else {
+      setGridModalItem(item);
+      setGridModalOpen(true);
+    }
   };
 
   const renderEmptyState = () => (
@@ -194,142 +260,218 @@ Price: ${formattedPrice}`;
         animate="visible"
         className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4"
       >
-        {shopItems?.map((item) => (
-          <motion.div
-            key={item.id}
-            variants={itemVariants}
-            className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col"
-          >
-            {/* Image Container */}
-            <div
-              className="relative aspect-square cursor-pointer group overflow-hidden"
-              onClick={() => handleImageClick(item)}
-            >
-              <Image
-                src={item?.postImgUrls?.[0] ?? ''}
-                alt={item?.itemName ?? ''}
-                fill
-                className="object-cover group-hover:scale-110 transition-transform duration-300"
-              />
+        {shopItems?.map((item) => {
+          const itemInCart = isInCart(item?.id ?? '');
+          const isSoldOut = !item?.availability;
+          const maxQty = item?.quantity ?? 1;
+          const existing = cartItems?.find((i: CartItem) => i.id === item?.id);
+          const currentQty = existing?.quantity || 0;
+          const isMaxQty = currentQty >= maxQty;
 
-              {/* Availability Badge */}
-              <Badge
-                className={`absolute top-2 left-2 backdrop-blur-md !rounded-lg shadow-lg ${
-                  item?.availability
-                    ? 'bg-white/10 border border-emerald-300/30'
-                    : 'bg-white/10 border border-gray-300/30'
-                }`}
-                count={
-                  <div
-                    className={`px-1 py-1 text-[10px] !flex gap-1 items-center font-semibold ${
-                      item?.availability ? 'text-emerald-100' : 'text-gray-200'
+          return (
+            <motion.div
+              key={item.id}
+              variants={itemVariants}
+              className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col"
+            >
+              {/* Image Container — click opens detail modal */}
+              <div
+                className="relative aspect-square cursor-pointer group overflow-hidden"
+                onClick={() => handleGridItemClick(item)}
+              >
+                <Image
+                  src={item?.postImgUrls?.[0] ?? ''}
+                  alt={item?.itemName ?? ''}
+                  fill
+                  className="object-cover group-hover:scale-110 transition-transform duration-300"
+                />
+
+                {/* Availability Badge */}
+                <Badge
+                  className={`absolute top-2 left-2 backdrop-blur-md !rounded-lg shadow-lg ${
+                    item?.availability
+                      ? 'bg-white/10 border border-emerald-300/30'
+                      : 'bg-white/10 border border-gray-300/30'
+                  }`}
+                  count={
+                    <div
+                      className={`px-1 py-1 text-[10px] !flex gap-1 items-center font-semibold ${
+                        item?.availability ? 'text-emerald-100' : 'text-gray-200'
+                      }`}
+                    >
+                      <div
+                        className={`w-1 h-1 rounded-full ${
+                          item?.availability
+                            ? 'bg-emerald-400 animate-pulse shadow-[0_0_12px_rgba(52,211,153,0.8)]'
+                            : 'bg-gray-300'
+                        }`}
+                      />
+                      <span>{item?.availability ? 'Available' : 'Sold Out'}</span>
+                    </div>
+                  }
+                />
+
+                {/* Condition Badge */}
+                <div className="absolute top-2 right-2">
+                  <span
+                    className={`px-2 py-1 rounded-full text-[10px] font-semibold backdrop-blur-sm ${
+                      item?.condition === 'Brand New'
+                        ? 'bg-green-500/90 text-white'
+                        : item?.condition === 'Uk Used'
+                          ? 'bg-blue-500/90 text-white'
+                          : 'bg-yellow-500/90 text-white'
                     }`}
                   >
-                    <div
-                      className={`w-1 h-1 rounded-full ${
-                        item?.availability
-                          ? 'bg-emerald-400 animate-pulse shadow-[0_0_12px_rgba(52,211,153,0.8)]'
-                          : 'bg-gray-300'
-                      }`}
-                    />
-                    <span>{item?.availability ? 'Available' : 'Sold Out'}</span>
-                  </div>
-                }
-              />
-
-              {/* Condition Badge */}
-              <div className="absolute top-2 right-2">
-                <span
-                  className={`px-2 py-1 rounded-full text-[10px] font-semibold backdrop-blur-sm ${
-                    item?.condition === 'Brand New'
-                      ? 'bg-green-500/90 text-white'
-                      : item?.condition === 'Uk Used'
-                        ? 'bg-blue-500/90 text-white'
-                        : 'bg-yellow-500/90 text-white'
-                  }`}
-                >
-                  {item?.condition}
-                </span>
-              </div>
-
-              {item?.sponsored && (
-                <div className="absolute bottom-2 left-2">
-                  <span className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-2 py-1 rounded-full text-[10px] font-semibold shadow-lg">
-                    Sponsored
+                    {item?.condition}
                   </span>
                 </div>
-              )}
-            </div>
 
-            {/* Product Details */}
-            <div className="p-3 flex flex-col flex-grow">
-              {/* Title */}
-              <h3
-                className="font-semibold text-sm dark:text-white mb-1 line-clamp-2 cursor-pointer hover:text-blue-600 transition-colors"
-                onClick={() => handleImageClick(item)}
-              >
-                {item?.itemName}
-              </h3>
+                {item?.sponsored && (
+                  <div className="absolute bottom-2 left-2">
+                    <span className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-2 py-1 rounded-full text-[10px] font-semibold shadow-lg">
+                      Sponsored
+                    </span>
+                  </div>
+                )}
 
-              {/* Price */}
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-lg font-bold bg-gradient-to-r from-orange-500 to-rose-500 bg-clip-text text-transparent">
-                  {numberFormat((item?.askingPrice?.price ?? 0) / 100, Currencies.NGN)}
-                </span>
-                {item?.askingPrice?.negotiable && (
-                  <span className="text-[9px] bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 px-1.5 py-0.5 rounded-full font-medium">
-                    Negotiable
-                  </span>
+                {/* Low stock badge */}
+                {item?.availability && maxQty > 0 && maxQty <= 5 && (
+                  <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-full">
+                    {maxQty} left
+                  </div>
                 )}
               </div>
 
-              {/* Description */}
-              <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-3 flex-grow">
-                {item?.description}
-              </p>
+              {/* Product Details */}
+              <div className="p-3 flex flex-col flex-grow">
+                {/* Title */}
+                <h3
+                  className="font-semibold text-sm dark:text-white mb-1 line-clamp-2 cursor-pointer hover:text-blue-600 transition-colors"
+                  onClick={() => handleGridItemClick(item)}
+                >
+                  {item?.itemName}
+                </h3>
 
-              {/* Tags */}
-              {item?.productTags && item.productTags.length > 0 && (
-                <div className="flex flex-wrap gap-1 mb-3">
-                  {item.productTags.slice(0, 2).map((tag: string, idx: number) => (
-                    <span
-                      key={idx}
-                      className="px-2 py-0.5 text-[9px] font-medium bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 rounded-full"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                  {item.productTags.length > 2 && (
-                    <span className="px-2 py-0.5 text-[9px] font-medium bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 rounded-full">
-                      +{item.productTags.length - 2}
+                {/* Price */}
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-lg font-bold bg-gradient-to-r from-orange-500 to-rose-500 bg-clip-text text-transparent">
+                    {numberFormat((item?.askingPrice?.price ?? 0) / 100, Currencies.NGN)}
+                  </span>
+                  {item?.askingPrice?.negotiable && (
+                    <span className="text-[9px] bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 px-1.5 py-0.5 rounded-full font-medium">
+                      Negotiable
                     </span>
                   )}
                 </div>
-              )}
 
-              {/* Action Button */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleWhatsAppMessage(item);
-                }}
-                className="w-full mb-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-all shadow-sm hover:shadow-md"
-              >
-                <MessageCircle size={14} />
-                Message on WhatsApp
-              </button>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handleBookmark(item)}
-                className={`w-full bg-neutral-100 !text-neutral-700 border !border-neutral-200 py-2 rounded-lg font-medium flex items-center justify-center gap-1 shadow-sm text-xs`}
-              >
-                <Bookmark size={14} />
-                {isSaved ? 'Remove from Save' : 'Save Item'}
-              </motion.button>
-            </div>
-          </motion.div>
-        ))}
+                {/* Description */}
+                <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-3 flex-grow">
+                  {item?.description}
+                </p>
+
+                {/* Tags */}
+                {item?.productTags && item.productTags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mb-3">
+                    {item.productTags.slice(0, 2).map((tag: string, idx: number) => (
+                      <span
+                        key={idx}
+                        className="px-2 py-0.5 text-[9px] font-medium bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 rounded-full"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                    {item.productTags.length > 2 && (
+                      <span className="px-2 py-0.5 text-[9px] font-medium bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 rounded-full">
+                        +{item.productTags.length - 2}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="space-y-1.5">
+                  {/* Buy Now + Add to Cart row */}
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleBuyNow(item);
+                      }}
+                      disabled={isSoldOut}
+                      className={`flex-1 py-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-all shadow-sm ${
+                        isSoldOut
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          : 'bg-gradient-to-r from-blue to-indigo-700 hover:from-blue hover:to-indigo-800 text-white hover:shadow-md'
+                      }`}
+                    >
+                      <ShoppingBag size={14} />
+                      Buy Now
+                    </button>
+
+                    {/* Add to Cart icon */}
+                    <Tooltip
+                      title={
+                        isSoldOut
+                          ? 'Sold out'
+                          : isMaxQty
+                            ? `Max qty (${maxQty})`
+                            : itemInCart
+                              ? 'In cart'
+                              : 'Add to cart'
+                      }
+                    >
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAddToCart(item);
+                        }}
+                        disabled={isSoldOut || isMaxQty}
+                        className={`p-2 rounded-lg border shadow-sm transition-colors ${
+                          isSoldOut || isMaxQty
+                            ? 'bg-gray-100 border-gray-200 text-gray-300 cursor-not-allowed'
+                            : itemInCart
+                              ? 'bg-blue-50 border-blue-200 text-blue-600'
+                              : 'bg-neutral-50 border-neutral-200 dark:bg-gray-700 dark:border-gray-600 text-gray-500 hover:border-blue-300 hover:text-blue-600'
+                        }`}
+                      >
+                        <ShoppingCart size={14} />
+                      </button>
+                    </Tooltip>
+                  </div>
+
+                  {/* WhatsApp + Save row */}
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleWhatsAppMessage(item);
+                      }}
+                      className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-all shadow-sm hover:shadow-md"
+                    >
+                      <MessageCircle size={14} />
+                      WhatsApp
+                    </button>
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleBookmark(item);
+                      }}
+                      className="p-2 rounded-lg border border-neutral-200 dark:border-gray-600 bg-neutral-50 dark:bg-gray-700 shadow-sm"
+                    >
+                      <Bookmark
+                        size={16}
+                        className={`${
+                          isSaved ? 'fill-pink-500 text-pink-500' : 'text-gray-400'
+                        } transition-colors`}
+                      />
+                    </motion.button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          );
+        })}
       </motion.div>
     );
   };
@@ -340,7 +482,7 @@ Price: ${formattedPrice}`;
     }
 
     return (
-      <div className="space-y-6 max-w-3xl mx-auto">
+      <div className="space-y-6 max-w-4xl mx-auto">
         {shopItems?.map((item, idx) => (
           <div key={idx}>
             <ModernItemPost
@@ -354,6 +496,7 @@ Price: ${formattedPrice}`;
               comments={item?.comments ?? []}
               productTags={item?.productTags ?? []}
               id={item?.id ?? ''}
+              quantity={item?.quantity ?? 1}
               setSelectedProductId={setSelectedProductId}
               availability={item?.availability ?? true}
             />
@@ -372,7 +515,7 @@ Price: ${formattedPrice}`;
       <Row gutter={[isMobile ? 0 : 24, 0]} className="w-full max-w-screen-7xl mx-auto">
         {/* Main Content */}
         <Col
-          lg={isMobile ? 24 : 15}
+          lg={isMobile ? 24 : 24}
           className="relative w-full p-0"
           style={{ height: '100vh', overflowY: 'auto' }}
         >
@@ -458,23 +601,31 @@ Price: ${formattedPrice}`;
             )}
           </div>
         </Col>
-
-        {/* Side Panel */}
-        {isDesktop && (
-          <Col lg={9}>
-            <motion.div
-              initial={{ x: 20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.4 }}
-              className="sticky top-0 pt-4"
-            >
-              <div className="bg-white dark:bg-gray-800 border border-neutral-50 rounded-lg shadow-sm">
-                <SidePanel />
-              </div>
-            </motion.div>
-          </Col>
-        )}
       </Row>
+
+      {/* Grid View Item Detail Modal */}
+      {gridModalItem && (
+        <ItemDetailModal
+          open={gridModalOpen}
+          onClose={() => {
+            setGridModalOpen(false);
+            setGridModalItem(null);
+          }}
+          item={{
+            description: gridModalItem?.description ?? '',
+            sponsored: gridModalItem?.sponsored ?? false,
+            postUserProfile: gridModalItem?.postUserProfile ?? {},
+            postImgurls: gridModalItem?.postImgUrls ?? [],
+            askingPrice: gridModalItem?.askingPrice ?? {},
+            condition: gridModalItem?.condition ?? 'Brand New',
+            comments: gridModalItem?.comments ?? [],
+            itemName: gridModalItem?.itemName ?? '',
+            id: gridModalItem?.id ?? '',
+            productTags: gridModalItem?.productTags ?? [],
+            quantity: gridModalItem?.quantity ?? 1,
+          }}
+        />
+      )}
 
       <NotificationsDrawer />
     </div>

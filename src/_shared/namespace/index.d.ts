@@ -124,4 +124,5 @@ export interface mockMarketItemType {
   fee: number;
   live: boolean;
   feePaymentStatus: 'processed' | 'pending' | 'awaiting payment' | 'awaiting approval';
+  quantity?: number;
 }

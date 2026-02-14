@@ -10,16 +10,16 @@ interface Props {
 const SideNavHeader: React.FC<Props> = ({ toggleSider }) => {
   const { push } = useRouter();
   return (
-    <div className="flex flex-col justify-start min-h-20 items-start gap-10 py-2 mt-5 px-7">
+    <div className="flex flex-col justify-start min-h-20 items-start gap-10 py-2 mt-5 px-5">
       {!toggleSider && (
         <div className="flex justify-between w-full items-center">
           <span className="cursor-pointer" onClick={() => push('/')}>
             <Image
               priority
-              src={`/assets/imgs/odg-logo-text.png`}
+              src={`/assets/imgs/odg-logo-new.png`}
               alt="odg-logo"
-              width={200}
-              height={60}
+              width={180}
+              height={40}
             />
           </span>
         </div>

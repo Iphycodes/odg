@@ -1,8 +1,18 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Badge, Tooltip } from 'antd';
-import { Bookmark, Share2, ChevronLeft, ChevronRight, MapPin, MessageCircle } from 'lucide-react';
+import { Badge, Tooltip, message } from 'antd';
+import {
+  Bookmark,
+  Share2,
+  ChevronLeft,
+  ChevronRight,
+  MapPin,
+  MessageCircle,
+  ShoppingCart,
+  ShoppingBag,
+} from 'lucide-react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { numberFormat } from '@grc/_shared/helpers';
 import TruncatedDescription from '@grc/_shared/components/truncated-description';
 import ItemDetailModal from '../item-detail-modal';
@@ -10,6 +20,9 @@ import { mediaSize, useMediaQuery } from '@grc/_shared/components/responsiveness
 import { Currencies } from '@grc/_shared/constant';
 import Cookie from 'js-cookie';
 import { isEmpty } from 'lodash';
+import { AppContext } from '@grc/app-context';
+import { CartItem } from '@grc/_shared/namespace/cart';
+import { setBuyNowItem } from '@grc/_shared/namespace/buy';
 
 interface ItemPostProps {
   description: string;
@@ -19,6 +32,7 @@ interface ItemPostProps {
   askingPrice: Record<string, any>;
   condition: 'Brand New' | 'Fairly Used' | 'Uk Used';
   availability?: boolean;
+  quantity?: number;
   comments: Record<string, any>[];
   itemName: string;
   id: string | number;
@@ -34,21 +48,29 @@ const ModernItemPost: React.FC<ItemPostProps> = ({
   askingPrice,
   condition,
   availability = true,
+  quantity = 1,
   comments,
   itemName,
   setSelectedProductId,
   id,
   productTags = [],
 }) => {
+  const router = useRouter();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isSaved, setIsSaved] = useState(false);
   const [slideDirection, setSlideDirection] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const isMobile = useMediaQuery(mediaSize.mobile);
+  const { addToCart, isInCart, cartItems } = useContext(AppContext);
 
-  // Ref for touch swiping on mobile
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const touchStartXRef = useRef<number | null>(null);
+
+  const itemInCart = isInCart(id);
+  const cartItem = cartItems?.find((i: CartItem) => i.id === id);
+  const cartQuantity = cartItem?.quantity || 0;
+  const isSoldOut = !availability;
+  const isMaxQuantityReached = cartQuantity >= quantity;
 
   const handleBookmark = () => {
     try {
@@ -66,11 +88,45 @@ const ModernItemPost: React.FC<ItemPostProps> = ({
         setIsSaved(true);
       }
 
-      // Dispatch custom event to notify other components
       window.dispatchEvent(new Event('savedItemsChanged'));
     } catch (error) {
       console.error('Error managing bookmarks:', error);
     }
+  };
+
+  const buildCartItem = (): CartItem => ({
+    id,
+    itemName,
+    description,
+    price: askingPrice?.price || 0,
+    quantity: 1,
+    maxQuantity: quantity,
+    image: postImgurls?.[0] || '',
+    condition,
+    negotiable: askingPrice?.negotiable || false,
+    sellerName: postUserProfile?.businessName || postUserProfile?.userName || '',
+  });
+
+  /** Add to cart only — no navigation */
+  const handleAddToCart = () => {
+    if (isSoldOut) return;
+    if (isMaxQuantityReached) {
+      message.warning(`Maximum quantity (${quantity}) reached for this item`);
+      return;
+    }
+    if (itemInCart) {
+      message.info('Item is already in your cart');
+      return;
+    }
+    addToCart(buildCartItem()?.id);
+    message.success('Added to cart!');
+  };
+
+  /** Store item in sessionStorage and navigate to checkout in buy-now mode */
+  const handleBuyNow = () => {
+    if (isSoldOut) return;
+    setBuyNowItem(buildCartItem());
+    router.push('/checkout?mode=buynow');
   };
 
   useEffect(() => {
@@ -109,8 +165,7 @@ const ModernItemPost: React.FC<ItemPostProps> = ({
     const formattedPrice = numberFormat(askingPrice?.price / 100, Currencies.NGN);
     const affiliateId = Cookie.get('odg-laptops-affiliateId') ?? '';
 
-    // Create the pre-filled message
-    const message = `
+    const msg = `
 Hi, Odogwu laptops,
 I am interested in this item.
 
@@ -121,15 +176,8 @@ Price: ${formattedPrice}
 ${!isEmpty(affiliateId) ? `Referral Code: ${affiliateId}` : ''}
 `;
 
-    console.log('message to send::::', message);
-
-    // Encode the message for URL
-    const encodedMessage = encodeURIComponent(message);
-
-    // Create WhatsApp URL
+    const encodedMessage = encodeURIComponent(msg);
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
-
-    // Open WhatsApp in a new tab
     window.open(whatsappUrl, '_blank');
   };
 
@@ -147,7 +195,6 @@ ${!isEmpty(affiliateId) ? `Referral Code: ${affiliateId}` : ''}
       if (navigator.share) {
         await navigator.share(shareData);
       } else {
-        // Fallback: copy to clipboard
         await navigator.clipboard.writeText(`${window.location.origin}/product/${id}`);
         alert('Link copied to clipboard!');
       }
@@ -156,7 +203,7 @@ ${!isEmpty(affiliateId) ? `Referral Code: ${affiliateId}` : ''}
     }
   };
 
-  // Touch event handlers for swiping on mobile
+  // Touch event handlers for mobile swiping
   useEffect(() => {
     const imageContainer = imageContainerRef.current;
     if (!imageContainer || !isMobile) return;
@@ -171,13 +218,10 @@ ${!isEmpty(affiliateId) ? `Referral Code: ${affiliateId}` : ''}
       const touchEndX = e.changedTouches[0].clientX;
       const diffX = touchEndX - touchStartXRef.current;
 
-      // Swipe threshold - only register swipes that move more than 50px
       if (Math.abs(diffX) > 50) {
         if (diffX > 0 && currentImageIndex > 0) {
-          // Swipe right -> previous image
           prevImage();
         } else if (diffX < 0 && currentImageIndex < postImgurls.length - 1) {
-          // Swipe left -> next image
           nextImage();
         }
       }
@@ -216,24 +260,16 @@ ${!isEmpty(affiliateId) ? `Referral Code: ${affiliateId}` : ''}
             <h3 className="font-medium">
               {postUserProfile?.businessName || postUserProfile?.userName}
             </h3>
-            {/* {sponsored && (
-              <span className="text-xs bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full font-medium">
-                Sponsored
-              </span>
-            )} */}
           </div>
           <div className="flex items-center gap-3 text-[12px] text-gray-500 dark:text-gray-400">
             <div className="flex items-center gap-1">
               <MapPin size={14} />
               <span>Kaduna State, Zaria</span>
             </div>
-            {/* <div className="flex items-center gap-1">
-              <Clock size={14} />
-              <span>2d ago</span>
-            </div> */}
           </div>
         </div>
       </div>
+
       <div className={`flex flex-col md:flex-row w-full ${isMobile ? 'gap-2' : 'gap-8'}`}>
         {/* Left section - Product Images */}
         <div
@@ -348,46 +384,18 @@ ${!isEmpty(affiliateId) ? `Referral Code: ${affiliateId}` : ''}
               }
               color={availability ? 'green' : 'default'}
             />
+
+            {/* Stock count badge */}
+            {availability && quantity > 0 && quantity <= 5 && (
+              <div className="absolute bottom-4 right-3 bg-black/60 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-1 rounded-full">
+                Only {quantity} left
+              </div>
+            )}
           </div>
         </div>
 
         {/* Right section - Product Details */}
         <div className={`w-full md:w-1/2 ${isMobile ? 'px-2' : ''} flex flex-col`}>
-          {/* Action buttons (mobile) */}
-          {isMobile && (
-            <div className="mt-auto space-y-6 mb-5">
-              <div className="flex items-center justify-end gap-4">
-                {/* <Tooltip title={isSaved ? 'Remove from saved' : 'Save item'}>
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setIsSaved(!isSaved)}
-                    className="group"
-                  >
-                    <Bookmark
-                      className={`w-7 h-7 ${
-                        isSaved
-                          ? 'fill-blue-500 text-blue-500'
-                          : 'text-black group-hover:text-black'
-                      } transition-colors`}
-                    />
-                  </motion.button>
-                </Tooltip> */}
-
-                {/* <Tooltip title="Share">
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={handleShare}
-                    className="group"
-                  >
-                    <Share2 className="w-7 h-7 text-black group-hover:text-black transition-colors" />
-                  </motion.button>
-                </Tooltip> */}
-              </div>
-            </div>
-          )}
-
           {/* Product info */}
           <div className="space-y-3 mb-4">
             <div>
@@ -423,87 +431,109 @@ ${!isEmpty(affiliateId) ? `Referral Code: ${affiliateId}` : ''}
             )}
           </div>
 
-          {/* Action buttons (desktop) */}
-          {!isMobile && (
-            <div className="mt-auto space-y-6 mb-3">
-              <div className="flex items-center justify-end gap-4">
-                {/* <Tooltip title={isSaved ? 'Remove from saved' : 'Save item'}>
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setIsSaved(!isSaved)}
-                    className="group"
-                  >
-                    <Bookmark
-                      className={`w-6 h-6 ${
-                        isSaved
-                          ? 'fill-blue-500 text-blue-500'
-                          : 'text-gray-400 group-hover:text-gray-600'
-                      } transition-colors`}
-                    />
-                  </motion.button>
-                </Tooltip> */}
+          {/* Spacer to push buttons down */}
+          <div className="mt-auto" />
 
-                {/* <Tooltip title="Share">
-                  <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={handleShare}
-                    className="group"
-                  >
-                    <Share2 className="w-6 h-6 text-gray-400 group-hover:text-gray-600 transition-colors" />
-                  </motion.button>
-                </Tooltip> */}
-              </div>
-            </div>
-          )}
-
-          {/* WhatsApp button */}
-          <div className="flex items-center gap-1">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleWhatsAppMessage}
-              className={
-                'w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-1 shadow-sm'
-              }
-            >
-              <MessageCircle size={20} />
-              Whatsapp
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleBookmark}
-              className={`w-full bg-neutral-100 !text-neutral-700 border !border-neutral-200 py-3 rounded-lg font-medium flex items-center justify-center gap-1 shadow-sm ${
-                isSaved ? 'text-[10px]' : ''
-              }`}
-            >
-              <Bookmark size={20} />
-              {isSaved ? 'Remove from Save' : 'Save Item'}
-            </motion.button>
-            <Tooltip title="Share">
+          {/* Action buttons */}
+          <div className="space-y-2">
+            {/* Buy Now + Add to Cart row */}
+            <div className="flex items-center gap-1.5">
+              {/* Buy Now → checkout */}
               <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={handleShare}
-                className="px-2 border border-neutral-200 py-3 rounded-lg font-medium flex items-center justify-center gap-1 shadow-sm"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleBuyNow}
+                disabled={isSoldOut}
+                className={`flex-1 py-3 rounded-lg font-medium flex items-center justify-center gap-1.5 shadow-sm text-sm transition-all ${
+                  isSoldOut
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-blue to-indigo-700 hover:from-blue hover:to-indigo-800 text-white hover:shadow-md'
+                }`}
               >
-                <Share2 className="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
+                <ShoppingBag size={16} />
+                Buy Now
               </motion.button>
-            </Tooltip>
+
+              {/* Add to Cart icon */}
+              <Tooltip
+                title={
+                  isSoldOut
+                    ? 'Sold out'
+                    : isMaxQuantityReached
+                      ? `Max quantity (${quantity}) reached`
+                      : itemInCart
+                        ? 'Already in cart'
+                        : 'Add to cart'
+                }
+              >
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleAddToCart}
+                  disabled={isSoldOut || isMaxQuantityReached}
+                  className={`p-3 rounded-lg border shadow-sm transition-colors ${
+                    isSoldOut || isMaxQuantityReached
+                      ? 'bg-gray-100 border-gray-200 text-gray-300 cursor-not-allowed'
+                      : itemInCart
+                        ? 'bg-blue-50 border-blue-200 text-blue-600 dark:bg-blue-900/20 dark:border-blue-800'
+                        : 'bg-neutral-100 border-neutral-200 dark:bg-gray-700 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-blue-300 hover:text-blue-600'
+                  }`}
+                >
+                  <ShoppingCart size={18} />
+                </motion.button>
+              </Tooltip>
+            </div>
+
+            {/* WhatsApp + Save + Share row */}
+            <div className="flex items-center gap-1.5">
+              {/* WhatsApp */}
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleWhatsAppMessage}
+                className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-1.5 shadow-sm text-sm"
+              >
+                <MessageCircle size={16} />
+                WhatsApp
+              </motion.button>
+
+              {/* Save icon button */}
+              <Tooltip title={isSaved ? 'Remove from saved' : 'Save item'}>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleBookmark}
+                  className={`p-3 rounded-lg border shadow-sm transition-colors ${
+                    isSaved
+                      ? 'bg-pink-50 border-pink-200 dark:bg-pink-900/20 dark:border-pink-800'
+                      : 'bg-neutral-100 border-neutral-200 dark:bg-gray-700 dark:border-gray-600'
+                  }`}
+                >
+                  <Bookmark
+                    size={18}
+                    className={`${
+                      isSaved ? 'fill-pink-500 text-pink-500' : 'text-gray-500 dark:text-gray-400'
+                    } transition-colors`}
+                  />
+                </motion.button>
+              </Tooltip>
+
+              {/* Share icon button */}
+              <Tooltip title="Share">
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleShare}
+                  className="p-3 rounded-lg border border-neutral-200 dark:border-gray-600 bg-neutral-100 dark:bg-gray-700 shadow-sm"
+                >
+                  <Share2 size={18} className="text-gray-500 dark:text-gray-400" />
+                </motion.button>
+              </Tooltip>
+            </div>
           </div>
-          {/* <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleWhatsAppMessage}
-            className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2 shadow-sm"
-          >
-            <MessageCircle size={20} />
-            Message on WhatsApp
-          </motion.button> */}
         </div>
       </div>
+
       <ItemDetailModal
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -518,6 +548,7 @@ ${!isEmpty(affiliateId) ? `Referral Code: ${affiliateId}` : ''}
           itemName,
           id,
           productTags,
+          quantity,
         }}
       />
     </motion.div>

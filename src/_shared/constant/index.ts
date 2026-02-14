@@ -166,6 +166,7 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
     },
     condition: 'Uk Used',
     availability: true,
+    quantity: 3,
     category: 'dell',
     itemName: 'Dell Latitude 7440',
     description: `Processor: Core i5
@@ -200,6 +201,7 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
     },
     condition: 'Uk Used',
     availability: true,
+    quantity: 5,
     itemName: 'Hp 840 g3',
     category: 'hp',
     description: `Processor: Core i5
@@ -229,6 +231,7 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
     },
     condition: 'Uk Used',
     availability: true,
+    quantity: 1,
     itemName: 'Dell XPS 15',
     category: 'dell',
     description: `Processor: Core i5
@@ -263,6 +266,7 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
     },
     condition: 'Uk Used',
     availability: true,
+    quantity: 2,
     itemName: 'Hp 840 g5',
     category: 'hp',
     description: `Processor: Core i5
@@ -275,7 +279,6 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
     live: true,
     feePaymentStatus: 'processed',
   },
-  // NEW ITEMS BELOW
   {
     id: 4,
     postUserProfile: {
@@ -293,6 +296,7 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
     },
     condition: 'Uk Used',
     availability: true,
+    quantity: 4,
     category: 'dell',
     itemName: 'Dell Latitude 5280',
     description: `Processor: Core i5
@@ -322,6 +326,7 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
     },
     condition: 'Uk Used',
     availability: true,
+    quantity: 2,
     category: 'dell',
     itemName: 'Dell Latitude 7420',
     description: `Processor: Core i7
@@ -352,6 +357,7 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
     },
     condition: 'Uk Used',
     availability: true,
+    quantity: 3,
     category: 'dell',
     itemName: 'Dell Latitude 7480',
     description: `Processor: Core i5
@@ -386,6 +392,7 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
     },
     condition: 'Uk Used',
     availability: true,
+    quantity: 6,
     category: 'hp',
     itemName: 'HP EliteBook 820 G3',
     description: `Processor: Core i5
@@ -416,6 +423,7 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
     },
     condition: 'Uk Used',
     availability: true,
+    quantity: 1,
     category: 'hp',
     itemName: 'HP EliteBook 830 G5',
     description: `Processor: Core i5
@@ -446,6 +454,7 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
     },
     condition: 'Uk Used',
     availability: true,
+    quantity: 7,
     category: 'hp',
     itemName: 'HP EliteBook 840 G3',
     description: `Processor: Core i5
@@ -480,6 +489,7 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
     },
     condition: 'Uk Used',
     availability: true,
+    quantity: 2,
     category: 'hp',
     itemName: 'HP EliteBook 840 G5',
     description: `Processor: Core i7
@@ -510,6 +520,7 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
     },
     condition: 'Uk Used',
     availability: true,
+    quantity: 4,
     category: 'hp',
     itemName: 'HP ProBook 440 G5',
     description: `Processor: Core i5
@@ -539,6 +550,7 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
     },
     condition: 'Uk Used',
     availability: true,
+    quantity: 3,
     category: 'lenovo',
     itemName: 'Lenovo ThinkPad T440s',
     description: `Processor: Core i5
@@ -575,6 +587,7 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
     },
     condition: 'Uk Used',
     availability: true,
+    quantity: 1,
     category: 'macbook',
     itemName: 'MacBook Pro 2020 13-inch',
     description: `Processor: Apple M1 Chip
@@ -588,7 +601,6 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
     live: true,
     feePaymentStatus: 'processed',
   },
-  // CHARGERS AND ACCESSORIES
   {
     id: 15,
     postUserProfile: {
@@ -606,6 +618,7 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
     },
     condition: 'Brand New',
     availability: true,
+    quantity: 15,
     category: 'accessories',
     itemName: 'Dell 130W Laptop Charger',
     description: `Original Dell charger
@@ -634,6 +647,7 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
     },
     condition: 'Brand New',
     availability: true,
+    quantity: 20,
     category: 'accessories',
     itemName: 'Dell 19V Laptop Charger',
     description: `Original Dell charger
@@ -662,6 +676,7 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
     },
     condition: 'Brand New',
     availability: true,
+    quantity: 12,
     category: 'accessories',
     itemName: 'Dell 130W Slim Charger',
     description: `Original Dell slim charger
@@ -690,6 +705,7 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
     },
     condition: 'Brand New',
     availability: true,
+    quantity: 25,
     category: 'accessories',
     itemName: 'HP 15 Laptop Charger',
     description: `Original HP charger
@@ -718,6 +734,7 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
     },
     condition: 'Brand New',
     availability: true,
+    quantity: 18,
     category: 'accessories',
     itemName: 'HP Big Mouth Charger',
     description: `Original HP charger
@@ -746,6 +763,7 @@ export const mockMarketItems: Partial<mockMarketItemType>[] = [
     },
     condition: 'Brand New',
     availability: true,
+    quantity: 10,
     category: 'accessories',
     itemName: 'Lenovo Laptop Charger',
     description: `Original Lenovo charger

@@ -84,13 +84,15 @@ const SideNav: React.FC<SideNavProps> = (props) => {
     <Sider
       collapsed={toggleSider}
       collapsedWidth={isMobile ? 0 : 80}
-      className="dash-sider border-r p-0 text-lg shadow-sm border-border/100 relative"
+      className="dash-sider border-r p-0 text-lg shadow-sm border-border/100 relative !bg-neutral-500"
       width={300}
       style={{
         overflow: 'auto',
         position: 'fixed',
         height: '100vh',
         scrollbarWidth: 'none',
+        background: 'red',
+        backgroundColor: 'red',
         scrollbarColor: 'red',
         left: 0,
         top: 0,

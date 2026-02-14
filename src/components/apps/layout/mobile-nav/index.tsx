@@ -1,8 +1,9 @@
-import React from 'react';
-import { Tooltip } from 'antd';
+import React, { useContext } from 'react';
+import { Badge, Tooltip } from 'antd';
 import { usePathname, useRouter } from 'next/navigation';
 import { Nav } from '@grc/app/nav';
 import { isEmpty } from 'lodash';
+import { AppContext } from '@grc/app-context';
 
 interface MobileNavProps {
   appNav: Nav;
@@ -20,6 +21,7 @@ const MobileNav: React.FC<MobileNavProps> = ({
   const pathname = usePathname();
   const path = pathname?.split('/')[1];
   const { push } = useRouter();
+  const { getCartCount } = useContext(AppContext);
 
   const handleMenuClick = ({ key }: { key: string }) => {
     appNav?.mobileMenuItems.map((item) => {
@@ -29,16 +31,6 @@ const MobileNav: React.FC<MobileNavProps> = ({
         }
       }
     });
-    // appNav?.footerMenuItems.map((item) => {
-    //   if (item.key === key) {
-    //     if (item.destination !== '') {
-    //       push(item?.destination);
-    //     }
-    //   }
-    // });
-    // if (key === 'notifications') {
-    //   setToggleNotificationsDrawer(false);
-    // }
     if (key === 'create-store') {
       setIsCreateStoreModalOpen(true);
     }
@@ -46,7 +38,6 @@ const MobileNav: React.FC<MobileNavProps> = ({
       push('/sell-item');
     }
     if (key === 'chats') {
-      // setIsChatsModalOpen(true);
       push('/chats');
     }
     if (key === 'profile') {
@@ -55,28 +46,6 @@ const MobileNav: React.FC<MobileNavProps> = ({
     setSelectedKey(key);
   };
 
-  // const handleNavClick = (item: any) => {
-  //   if (item.destination) {
-  //     push(item.destination);
-  //   }
-
-  //   switch (item.key) {
-  //     case 'notifications':
-  //       setToggleNotificationsDrawer(false);
-  //       break;
-  //     case 'create-store':
-  //       setIsCreateStoreModalOpen(true);
-  //       break;
-  //     case 'chats':
-  //       setIsChatsModalOpen(true);
-  //       break;
-  //     case 'profile':
-  //       setToggleProfileDrawer(false);
-  //       break;
-  //   }
-  //   setSelectedKey(item.key);
-  // };
-
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border/100 shadow-lg z-50">
       <div className="flex justify-around items-center h-16 px-2">
@@ -84,7 +53,7 @@ const MobileNav: React.FC<MobileNavProps> = ({
           <Tooltip key={item.key} title={item.label} placement="top">
             <span
               onClick={() => handleMenuClick(item)}
-              className={`p-2 transition-colors h-10 w-10 cursor-pointer hover:bg-neutral-50 ${
+              className={`p-2 transition-colors h-10 w-10 cursor-pointer hover:bg-neutral-50 relative ${
                 isEmpty(path) && item.key === 'market'
                   ? 'bg-neutral-200'
                   : path === item.key
@@ -97,6 +66,15 @@ const MobileNav: React.FC<MobileNavProps> = ({
               }`}
             >
               {item.icon}
+              {/* Cart badge */}
+              {item.key === 'cart' && getCartCount() > 0 && (
+                <Badge
+                  count={getCartCount()}
+                  size="small"
+                  className="absolute -top-1 -right-1"
+                  style={{ fontSize: '10px' }}
+                />
+              )}
             </span>
           </Tooltip>
         ))}

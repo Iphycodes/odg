@@ -4,8 +4,7 @@ import { SiderTheme } from 'antd/es/layout/Sider';
 import { NavItem, getFirstCharacter, getRandomColorByString } from '@grc/_shared/helpers';
 import { isEmpty } from 'lodash';
 import { Avatar } from 'antd';
-import { Bookmark, ShopRemove } from 'iconsax-react';
-import { ShoppingBag } from 'lucide-react';
+import { Store, ShoppingCart, Bookmark, ShoppingBag } from 'lucide-react';
 import SideNavAuthButton from '@grc/components/apps/layout/side-nav/lib/side-nav-auth-button';
 
 export type Nav = {
@@ -47,44 +46,20 @@ const menuItems: NavItem[] = [
     label: 'Shop',
     key: 'shop',
     destination: '/',
-    // icon: <i className="ri-store-2-line" style={{ fontSize: '22px' }}></i>,
-    icon: <ShopRemove variant="Bulk" color="#6366f1" />,
+    icon: <Store size={20} color="#6366f1" />,
   },
-  // {
-  //   label: 'Find Vendor',
-  //   key: 'vendors',
-  //   destination: '/vendors',
-  //   // icon: <i className="ri-user-location-line" style={{ fontSize: '22px' }}></i>,
-  //   icon: <HeartSearch variant="Bulk" color="#22c55e" />,
-  // },
-  // {
-  //   label: 'Chats',
-  //   key: 'chats',
-  //   destination: '',
-  //   // icon: <i className="ri-question-answer-line" style={{ fontSize: '22px' }}></i>,
-  //   icon: <MessageNotif variant="Bulk" color="#ef4444" />,
-  // },
-  // {
-  //   label: 'Notifications',
-  //   key: 'notifications',
-  //   destination: '',
-  //   // icon: <i className="ri-notification-line" style={{ fontSize: '22px' }}></i>,
-  //   icon: <Notification variant="Bulk" color="#1e88e5" />,
-  // },
+  {
+    label: 'Cart',
+    key: 'cart',
+    destination: '/cart',
+    icon: <ShoppingCart size={20} color="#f97316" />,
+  },
   {
     label: 'Saved',
     key: 'saved',
     destination: '/saved',
-    // icon: <i className="ri-pushpin-line" style={{ fontSize: '22px' }}></i>,
-    icon: <Bookmark variant="Bulk" color="#ec4899" />,
+    icon: <Bookmark size={20} color="#ec4899" />,
   },
-  // {
-  //   label: 'Sell Item',
-  //   key: 'sell-item',
-  //   destination: '/sell-item',
-  //   // icon: <i className="ri-arrow-left-right-line" style={{ fontSize: '22px' }}></i>,
-  //   icon: <MoneyChange variant="Bulk" color="#f97316" />,
-  // },
 ];
 
 const mobileMenuItems: NavItem[] = [
@@ -92,42 +67,20 @@ const mobileMenuItems: NavItem[] = [
     label: 'Shop',
     key: 'shop',
     destination: '/',
-    // icon: <i className="ri-store-2-line" style={{ fontSize: '22px' }}></i>,
-    // icon: <ShopRemove variant="Bulk" color="#6366f1" />,
-    icon: <ShoppingBag />,
+    icon: <ShoppingBag size={22} color="#6366f1" />,
   },
-  // {
-  //   label: 'Find Vendor',
-  //   key: 'vendors',
-  //   destination: '/vendors',
-  //   // icon: <i className="ri-user-location-line" style={{ fontSize: '22px' }}></i>,
-  //   // icon: <HeartSearch variant="Bulk" color="#22c55e" />,
-  //   icon: <UserRoundSearch />,
-  // },
-  // {
-  //   label: 'Chats',
-  //   key: 'chats',
-  //   destination: '',
-  //   // icon: <i className="ri-question-answer-line" style={{ fontSize: '22px' }}></i>,
-  //   // icon: <MessageNotif variant="Bulk" color="#ef4444" />,
-  //   icon: <MessageCircleMore />,
-  // },
+  {
+    label: 'Cart',
+    key: 'cart',
+    destination: '/cart',
+    icon: <ShoppingCart size={22} color="#f97316" />,
+  },
   {
     label: 'Saved',
     key: 'saved',
     destination: '/saved',
-    // icon: <i className="ri-bookmark-line" style={{ fontSize: '22px' }}></i>,
-    // icon: <Bookmark variant="Bulk" color="#ec4899" />,
-    icon: <Bookmark />,
+    icon: <Bookmark size={22} color="#ec4899" />,
   },
-  // {
-  //   label: 'Sell Item',
-  //   key: 'sell-item',
-  //   destination: '/sell-item',
-  //   // icon: <i className="ri-arrow-left-right-line" style={{ fontSize: '22px' }}></i>,
-  //   // icon: <MoneyChange variant="Bulk" color="#f97316" />,
-  //   icon: <HandCoins />,
-  // },
 ];
 
 const appNav: Nav = {
