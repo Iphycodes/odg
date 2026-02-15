@@ -18,7 +18,7 @@ import {
   Search,
 } from 'lucide-react';
 import Image from 'next/image';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { AppContext } from '@grc/app-context';
 import { fetchData, numberFormat } from '@grc/_shared/helpers';
 import { Currencies } from '@grc/_shared/constant';
@@ -236,11 +236,19 @@ const PaystackButton = ({
 // ─── Main Checkout ───────────────────────────────────────────────────
 const Checkout = () => {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  // const searchParams = useSearchParams();
   const isMobile = useMediaQuery(mediaSize.mobile);
   const { cartItems, clearCart } = useContext(AppContext);
 
-  const isBuyNow = searchParams?.get('mode') === 'buynow';
+  // const isBuyNow = searchParams?.get('mode') === 'buynow';
+
+  // Replace with this:
+  const [isBuyNow, setIsBuyNow] = useState(false);
+  const params = new URLSearchParams(window.location.search);
+
+  useEffect(() => {
+    setIsBuyNow(params.get('mode') === 'buynow');
+  }, [params]);
 
   // Buy-now item
   const [buyNowItem, setBuyNowItemState] = useState<CartItem | null>(null);
