@@ -79,7 +79,7 @@ const AppBaseLayout: React.FC<AppBaseLayoutProps> = ({ children }) => {
           marginLeft: `${mobileResponsive ? 0 : tabletResponsive ? 0 : '300px'}`,
           transition: 'margin-left 0.3s ease',
           // Add padding bottom for mobile to account for bottom navigation
-          paddingBottom: mobileResponsive ? '80px' : '0',
+          marginBottom: mobileResponsive ? '0' : '0',
           maxHeight: '100vh',
           height: '100vh',
         }}

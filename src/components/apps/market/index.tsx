@@ -512,7 +512,7 @@ Price: ${formattedPrice}`;
 
   return (
     <div className="min-h-screen dark:bg-gray-900/50 w-full">
-      <Row gutter={[isMobile ? 0 : 24, 0]} className="w-full max-w-screen-7xl mx-auto">
+      <Row gutter={[isMobile ? 0 : 24, 0]} className={`w-full max-w-screen-7xl mx-auto`}>
         {/* Main Content */}
         <Col
           lg={isMobile ? 24 : 24}
@@ -523,7 +523,7 @@ Price: ${formattedPrice}`;
           <motion.div
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="sticky top-0 z-20 backdrop-blur-md bg-white/80 dark:bg-gray-900/80 shadow-sm"
+            className="!sticky top-0 z-20 backdrop-blur-md bg-white/80 dark:bg-gray-900/80 shadow-sm"
           >
             <div className={`p-4 ${isMobile ? 'px-1 pt-2' : ''}`}>
               <div className="w-full flex items-center justify-between gap-3 mb-3">
@@ -543,28 +543,33 @@ Price: ${formattedPrice}`;
 
                 {/* View Toggle */}
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleViewChange('grid')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors text-sm ${
-                      viewType === 'grid'
-                        ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-                        : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                    <Grid size={16} />
-                    {!isMobile && <span className="font-medium">Grid</span>}
-                  </button>
-                  <button
-                    onClick={() => handleViewChange('list')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors text-sm ${
-                      viewType === 'list'
-                        ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-                        : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                    <List size={16} />
-                    {!isMobile && <span className="font-medium">List</span>}
-                  </button>
+                  <Tooltip title={'Grid View'}>
+                    <button
+                      onClick={() => handleViewChange('grid')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors text-sm ${
+                        viewType === 'grid'
+                          ? 'bg-indigo-50 text-black font-semibold dark:bg-blue/30 dark:text-blue-400'
+                          : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      <Grid size={16} />
+                      {!isMobile && <span className="font-medium">Grid</span>}
+                    </button>
+                  </Tooltip>
+
+                  <Tooltip title={'Grid View'}>
+                    <button
+                      onClick={() => handleViewChange('list')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors text-sm ${
+                        viewType === 'list'
+                          ? 'bg-indigo-50 text-black font-semibold dark:bg-blue-900/30 dark:text-blue-400'
+                          : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      <List size={16} />
+                      {!isMobile && <span className="font-medium">List</span>}
+                    </button>
+                  </Tooltip>
                 </div>
               </div>
 
@@ -585,7 +590,7 @@ Price: ${formattedPrice}`;
           </motion.div>
 
           {/* Items Grid */}
-          <div className={`${isMobile ? 'px-0' : 'px-4'} py-6`}>
+          <div className={`${isMobile ? 'px-0 mb-10' : 'px-4'} py-6`}>
             {isLoading ? (
               <div className="space-y-6">
                 {[1, 2, 3].map((i) => (
