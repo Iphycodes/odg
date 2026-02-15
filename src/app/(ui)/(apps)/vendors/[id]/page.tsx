@@ -63,8 +63,6 @@ const VendorPage = ({ params }: { params: { id: string } }) => {
 
   const handleChat = () => {
     // Implement chat functionality
-    console.log('Opening chat with vendor:', mockVendorData.id);
-    // You can redirect to chat page or open chat modal
     router.push(`/chats?vendor=${mockVendorData.id}`);
   };
 
